@@ -32,7 +32,8 @@ clean:
 		@rm -f $(OBJS)
 		@rm -rf $(OBJS_DIR)
 
-fclean: clean
+fclean:
+		clean
 		@rm -f $(NAME)
 		@echo "\n\033[0;31mAll is gone\033[0m\n"
 
