@@ -10,7 +10,7 @@ SRC = $(SRC_DIR)/main.cpp\
 
 OBJ_DIR = objects
 
-OBJ = $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(SRC))
+OBJ = $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SRC))
 
 COMP = c++
 
@@ -29,11 +29,10 @@ $(OBJ_DIR):
 		@mkdir -p $(OBJ_DIR)
 
 clean:
-		@rm -f $(OBJS)
-		@rm -rf $(OBJS_DIR)
+		@rm -f $(OBJ)
+		@rm -rf $(OBJ_DIR)
 
-fclean:
-		clean
+fclean: clean
 		@rm -f $(NAME)
 		@echo "\n\033[0;31mAll is gone\033[0m\n"
 
