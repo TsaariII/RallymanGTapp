@@ -11,6 +11,7 @@ void Driver::addDiceRoll(const std::string& result) {
 }
 
 void Driver::addFocusToken() { focusTokens++; }
+void Driver::addTurn() { turns++; };
 void Driver::useFocusToken() { if (focusTokens > 0) { focusTokens--; usedFocusTokens++; } }
 void Driver::setPosition(int pos) { position = pos; }
 void Driver::setCurrentGear(const std::string& gear) { currentGear = gear; }

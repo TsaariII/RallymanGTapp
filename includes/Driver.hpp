@@ -10,6 +10,7 @@ class Driver
         std::string team;
         int position;
         std::string currentGear;
+        int turns;
         int focusTokens;
         int usedFocusTokens;
         int lostGear;
@@ -23,6 +24,7 @@ class Driver
         Driver(const std::string &name, const std::string &team);
         void addDiceRoll(const std::string &result);
         void addFocusToken();
+        void addTurn();
         void useFocusToken();
         void setPosition(int pos);
         void setCurrentGear(const std::string &gear);

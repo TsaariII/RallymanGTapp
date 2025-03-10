@@ -70,7 +70,6 @@ void raceTurn(std::vector<Team>& teams, const std::map<std::string, Dice>& diceM
     std::sort(drivers.begin(), drivers.end(), [](Driver* a, Driver* b) {
         return a->getPosition() < b->getPosition();
     });
-    std::cout << "Race begins!!" << std::endl;
     for (Driver* driver : drivers)
     {
         std::cout << "Now rolling for " << driver->getName()
@@ -96,6 +95,7 @@ void raceTurn(std::vector<Team>& teams, const std::map<std::string, Dice>& diceM
                 rollAllAtOnce(diceSequence, diceMap, *driver, trackSection);
             else
                 std::cout << "Invalid roll mode. Skipping this driver." << std::endl;
+            driver->addTurn();
             break; // Exit loop after successful roll
         }
     }
@@ -118,7 +118,8 @@ int main()
         {"5", createDice("5")}, {"6", createDice("6")},
         {"C", createDice("C")}, {"B", createDice("B")}
     };
-    std::string trackSection = "yellow";
+    std::string trackSection = "Y";
+    std::cout << "Race begins!!" << std::endl;
     while (true)
     {
         raceTurn(teams, diceMap, trackSection);
