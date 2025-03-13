@@ -1,17 +1,21 @@
 
 #pragma once
-# include <string>
-# include <vector>
+#include <string>
+#include <vector>
+#include <sqlite3.h>
+#include "Tile.hpp"
 
 class Track
 {
 private:
     std::string name;
-    // std::vector<std::string> sections; // Example: {"yellow", "orange", "red", "yellow"}
+    std::vector<Tile> tiles;
+    void loadTrackFromDatabase(const std::string& dbName);
 
 public:
-    Track(const std::string& name);
-
-    // std::string getSection(int position);
-    std::string getName();
+    Track(const std::string& trackName, const std::string& dbName = "tracks.db");
+    const Tile &getTile(int index) const;
+    std::string getName() const;
+    int getTrackLength() const;
+    void printTrack() const;
 };

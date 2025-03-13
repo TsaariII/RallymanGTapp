@@ -15,5 +15,5 @@ public:
     std::string getTeamName() const;
     Driver& getDriver1();
     Driver& getDriver2();
-    void resetTeamStats();
+    // void resetTeamStats();
 };

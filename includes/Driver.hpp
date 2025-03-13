@@ -1,49 +1,40 @@
 
 #pragma once
-# include <string>
-# include <vector>
+#include "Stats.hpp"
+#include "Tile.hpp"
+#include "Track.hpp"
+#include <string>
 
 class Driver
 {
     private:
-        std::string name;
-        std::string team;
+        const std::string name;
+        const std::string team;
         int position;
         std::string currentGear;
-        int turns;
-        int focusTokens;
-        int usedFocusTokens;
-        int lostGear;
-        int lostBrake;
-        int lostCoast;
-        int weatherToken;
-        int yellowFlag;
-        int greenFlag;
-        std::vector<std::string> diceRolls;
+        Stats stats;
+        int tileIndex;    
+        int squareIndex;
+        int laneIndex;
+    
     public:
         Driver(const std::string &name, const std::string &team);
-        void addDiceRoll(const std::string &result);
-        void addFocusToken();
-        void addTurn();
-        void useFocusToken();
+    
         void setPosition(int pos);
-        void setCurrentGear(const std::string &gear);
-        void addCrashTokens(const std::string &gear, const std::string &section);
+        void setCurrentGear(const std::string& gear);
+        void setTileIndex(const int index);
+        void setLaneIndex(const int index);
+        void setSquareIndex(const int index);
+        
+        void moveForward(const Track& track);
+        void changeLane(const Track& track, int direction); // -1 left, +1 right
+    
+        Stats &getStats();
         std::string getName() const;
         std::string getTeam() const;
         int getPosition() const;
-        int getFocusTokens() const;
-        int getUsedFocusTokens() const;
-        std::string getLastGear() const;
-
-        // For exporting stats
-        std::vector<std::string> getDiceResults() const;
-        int getMinusGearDice() const;
-        int getMinusBrakeDice() const;
-        int getMinusCoastDice() const;
-        int getWeatherToken() const;
-        int getYellowFlag() const;
-        int getGreenFlag() const;
-
-        void resetStats();
-};
+        std::string getCurrentGear() const;
+        int getTileIndex() const;
+        int getSquareIndex() const;
+        int getLaneIndex() const;
+    };

@@ -45,7 +45,7 @@ void coastOrBreak(Driver &driver, const std::vector<std::string> &diceSequence, 
         {
             if (diceSequence[0] == "C")
             {
-                gear = driver.getLastGear();
+                gear = driver.getCurrentGear();
                 break ;
             }
             if (diceSequence[i + 1] == "C")
@@ -80,7 +80,7 @@ void checkColorInput(Driver &driver, std::string gear, std::string section)
         std::cin >> section;
         if (section == "O" || section == "Y" || section == "R")
         {
-            driver.addCrashTokens(gear, section);
+            driver.getStats().addCrashTokens(gear, section);
             std::cout << "Lost control and spun!" << std::endl;
             break ;
         }
@@ -94,7 +94,7 @@ void checkColorInput(Driver &driver, std::string gear, std::string section)
     return ;
 }
 
-void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<std::string, Dice> &diceMap, Driver &driver, std::string section)
+void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<std::string, Dice> &diceMap, Driver &driver, Track &track)
 {
     int crash = 0;
     std::string gear;
@@ -110,9 +110,10 @@ void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<s
             gear = diceSequence[i];
             coastOrBreak(driver, diceSequence, result);
             std::cout << "You lost control on " << gear << " gear" << std::endl;
-            checkColorInput(driver, gear, section);
+            checkColorInput(driver, gear, track.getTile(driver.getTileIndex()).color);
             return ;
         }
+        driver.moveForward(track);
         std::cout << "Press Enter to continue or type 'exit' to return to dice selection: ";
         std::string choice;
         std::getline(std::cin, choice);
@@ -121,7 +122,7 @@ void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<s
     }
 }
 
-void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<std::string, Dice> &diceMap, Driver &driver, std::string section)
+void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<std::string, Dice> &diceMap, Driver &driver, Track &track)
 {
     int tokens = diceSequence.size();
     int crash = 0;
@@ -146,7 +147,9 @@ void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<
     if (crash >= 3)
     {
         std::cout << "You lost control on " << gear << " gear" << std::endl;
-        checkColorInput(driver, gear, section);
+        checkColorInput(driver, gear, track.getTile(driver.getTileIndex()).color);
     }
+    for (int i = 0; i < tokens; i++)
+        driver.moveForward(track);
     std::cout << "Tokens earned: " << tokens << std::endl;
 }
