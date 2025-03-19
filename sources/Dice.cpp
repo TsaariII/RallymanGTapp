@@ -7,13 +7,15 @@
 #include <ctime>
 #include <map>
 
-// Dice class implementations
-Dice::Dice(const std::vector<std::string>& sides) : sides(sides) {}
+Dice::Dice(const std::vector<std::string>& sides) : _Sides(sides) {}
+Dice::~Dice() {};
 
-std::string Dice::roll() const {
-    if (sides.empty()) return "Invalid dice!";
-    int index = rand() % sides.size();
-    return sides[index];
+std::string Dice::roll() const
+{
+    if (_Sides.empty())
+        return "Invalid dice!";
+    int index = rand() % _Sides.size();
+    return _Sides[index];
 }
 
 Dice createDice(const std::string &type)
@@ -39,34 +41,26 @@ Dice createDice(const std::string &type)
 
 void coastOrBreak(Driver &driver, const std::vector<std::string> &diceSequence, std::string &gear)
 {
-    if (gear == "C")
-    {
-        for(size_t i = 0; i < diceSequence.size(); i++)
-        {
-            if (diceSequence[0] == "C")
-            {
-                gear = driver.getCurrentGear();
-                break ;
-            }
-            if (diceSequence[i + 1] == "C")
-            {
-                gear = diceSequence[i];
-                break ;
+    if (gear == "C") {
+        if (diceSequence.front() == "C") {
+            gear = driver.getCurrentGear();
+            return ;
+        }
+        for(size_t i = 0; i < diceSequence.size(); i++) {
+            if (diceSequence[i] == "C") {
+                gear = diceSequence[i - 1];
+                return ;
             }
         }
     }
-    if (gear == "B")
-    {
-        for(size_t i = 0; i < diceSequence.size(); i++)
-        {
-            while (diceSequence[i] == "B")
-            {
-                if (diceSequence[i + 1] != "B")
-                {
-                    gear = diceSequence[i];
-                    break ;
-                }
-                i++;
+    if (gear == "B") {
+        for(size_t i = 0; i < diceSequence.size(); i++) {
+            if (diceSequence[i] == "B") {
+                while (i + 1 < diceSequence.size() && diceSequence[i + 1] == "B")
+                    i++;
+                if (i + 1 < diceSequence.size())
+                    gear = diceSequence[i + 1];
+                return ;
             }
         }
     }
@@ -114,6 +108,17 @@ void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<s
             return ;
         }
         driver.moveForward(track);
+        std::cout << "Enter lane: ";
+        int lane;
+        std::cin >> lane;
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        driver.setLaneIndex(lane);
+        std::cout << "Enter square: ";
+        int sqr;
+        std::cin >> sqr;
+        driver.setSquareIndex(sqr);
+        driver.moveForward(track);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Press Enter to continue or type 'exit' to return to dice selection: ";
         std::string choice;
         std::getline(std::cin, choice);
@@ -150,6 +155,12 @@ void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<
         checkColorInput(driver, gear, track.getTile(driver.getTileIndex()).color);
     }
     for (int i = 0; i < tokens; i++)
+    {
         driver.moveForward(track);
+        std::cout << "Enter lane: ";
+        int lane;
+        std::cin >> lane;
+        driver.setLaneIndex(lane);
+    }
     std::cout << "Tokens earned: " << tokens << std::endl;
 }

@@ -12,10 +12,12 @@ class Driver
         const std::string team;
         int position;
         std::string currentGear;
+        int lap;
         Stats stats;
         int tileIndex;    
         int squareIndex;
         int laneIndex;
+        int insideIndex;
     
     public:
         Driver(const std::string &name, const std::string &team);
@@ -25,7 +27,7 @@ class Driver
         void setTileIndex(const int index);
         void setLaneIndex(const int index);
         void setSquareIndex(const int index);
-        
+        void setInsideIndex(const int index);
         void moveForward(const Track& track);
         void changeLane(const Track& track, int direction); // -1 left, +1 right
     
@@ -34,7 +36,9 @@ class Driver
         std::string getTeam() const;
         int getPosition() const;
         std::string getCurrentGear() const;
+        int getLap() const;
         int getTileIndex() const;
         int getSquareIndex() const;
         int getLaneIndex() const;
+        int getInsideIndex() const;
     };

@@ -8,7 +8,8 @@
 #include "../includes/Driver.hpp"
 #include "../includes/Track.hpp"
 
-std::vector<std::string> parseInput(const std::string& input) {
+std::vector<std::string> parseInput(const std::string& input)
+{
     std::vector<std::string> diceSequence;
     std::stringstream ss(input);
     std::string item;
@@ -31,90 +32,73 @@ std::vector<std::string> parseInput(const std::string& input) {
     return diceSequence;
 }
 
-void setPositions(std::vector<Driver*> drivers, Track track)
+int getValidPosition(Driver *driver, std::set<int>& assignedPositions)
 {
-    std::set<int> assignedPositions;
     int pos;
-    int tile;
-    int lane;
-    int sqr;
-    for (Driver* driver : drivers)
+    while (true)
     {
-        while (true)
+        std::cout << "Enter position for " << driver->getName()
+        << " from team " << driver->getTeam() << " (1-12): ";
+        std::cin >> pos;
+        if (std::cin.fail() || pos < 1 || pos > 12 || assignedPositions.count(pos))
         {
-            std::cout << "Enter position for " << driver->getName()
-                      << " from team " << driver->getTeam() << " (1-12): ";
-            std::cin >> pos;
-            if (std::cin.fail() || pos < 1 || pos > 12 || assignedPositions.count(pos))
-            {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid or duplicate position. Please enter a unique number between 1 and 12." << std::endl;
-            }
-            else
-            {
-                assignedPositions.insert(pos);
-                driver->setPosition(pos);
-            }
-            std::cout << "Enter starting tile (1 - " << track.getTrackLength() - 1 << "): ";
-            std::cin >> tile;
-            if (std::cin.fail())
-            {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid" << std::endl;
-            }
-            else
-                driver->setTileIndex(tile);
-            std::cout << "Enter lane (1 - 3): ";
-            std::cin >> lane;
-            if (lane < 0 || lane >= track.getTile(tile).lanes)
-            {
-                std::cerr << "Error: Lane " << lane + 1 << " does not exist on Tile " << tile + 1 << "!\n";
-                continue ;
-            }
-            if (std::cin.fail())
-            {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid" << std::endl;
-            }
-            else
-                driver->setLaneIndex(lane);
-            std::cout << "Enter square (0 -" << track.getTile(tile).squares.size() - 1 << "): ";
-            std::cin >> sqr;
-            if (std::cin.fail())
-            {
-                std::cin.clear();
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                std::cout << "Invalid" << std::endl;
-            }
-            else
-            {
-                driver->setSquareIndex(sqr);
-                break ;
-            }
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Invalid or duplicate position! Try again.\n";
+        }
+        else
+        {
+            assignedPositions.insert(pos);
+            return pos;
         }
     }
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
 }
 
-void raceTurn(std::vector<Team>& teams, const std::map<std::string, Dice>& diceMap, Track &track)
+void checkPositions(std::vector<Driver*> &drivers, Track &track) {
+    std::sort(drivers.begin(), drivers.end(), [&](Driver* a, Driver* b) {
+        if (a->getLap() != b->getLap()) 
+            return a->getLap() > b->getLap();
+
+        if (a->getTileIndex() != b->getTileIndex()) 
+            return a->getTileIndex() > b->getTileIndex();
+
+        if (a->getSquareIndex() != b->getSquareIndex()) 
+            return a->getSquareIndex() > b->getSquareIndex();
+        int tileId = a->getTileIndex();
+        if (tileId < track.getTrackLength()) {
+            const Tile& tile = track.getTile(tileId);
+            int aInsidePriority = tile.getInsidePriority(a->getLaneIndex());
+            int bInsidePriority = tile.getInsidePriority(b->getLaneIndex());
+
+            if (aInsidePriority != bInsidePriority)
+                return aInsidePriority < bInsidePriority; // Lower insidePriority is better
+        }
+        return false;
+    });
+}
+
+void setDriverStartingPosition(Driver* driver, Track& track, std::set<int>& assignedPositions)
 {
-    std::vector<Driver*> drivers;
-    for (auto& team : teams) {
-        drivers.push_back(&team.getDriver1());
-        drivers.push_back(&team.getDriver2());
-    }
-    setPositions(drivers, track);
+    driver->setPosition(getValidPosition(driver, assignedPositions));
+    int tileIndex = getValidTileIndex(track);
+    driver->setTileIndex(tileIndex);
+    int laneIndex = getValidLaneIndex(track, tileIndex);
+    driver->setLaneIndex(laneIndex);
+    int squareIndex = getValidSquareIndex(track, tileIndex, laneIndex);
+    driver->setSquareIndex(squareIndex);
+}
+
+void raceTurn(std::vector<Driver*> drivers, const std::map<std::string, Dice>& diceMap, Track &track)
+{
+    checkPositions(drivers, track);
     std::sort(drivers.begin(), drivers.end(), [](Driver* a, Driver* b) {
         return a->getPosition() < b->getPosition();
     });
     for (Driver* driver : drivers)
     {
         std::cout << "Now rolling for " << driver->getName()
-                << " from team " << driver->getTeam()
-                << " (Position " << driver->getPosition() << ")" << std::endl;
+        << " from team " << driver->getTeam()
+        << " (Position " << driver->getPosition() << ")" << std::endl;
         while (true)
         {
             std::cout << "Enter dice for this driver: ";
@@ -130,26 +114,37 @@ void raceTurn(std::vector<Team>& teams, const std::map<std::string, Dice>& diceM
             std::cin >> choice;
             std::cin.ignore();
             if (choice == 1)
-                rollOneByOne(diceSequence, diceMap, *driver, track);
+            rollOneByOne(diceSequence, diceMap, *driver, track);
             else if (choice == 2)
-                rollAllAtOnce(diceSequence, diceMap, *driver, track);
+            rollAllAtOnce(diceSequence, diceMap, *driver, track);
             else
-                std::cout << "Invalid roll mode. Skipping this driver." << std::endl;
+            std::cout << "Invalid roll mode. Skipping this driver." << std::endl;
             driver->getStats().addTurn();
             break;
         }
     }
 }
 
+void setPositions(std::vector<Driver*>& drivers, Track& track) {
+    std::set<int> assignedPositions;
+
+    for (Driver* driver : drivers) {
+        std::cout << "Setting position for " << driver->getName() 
+                  << " from team " << driver->getTeam() << "\n";
+        setDriverStartingPosition(driver, track, assignedPositions);
+    }
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
 int main()
 {
     std::vector<Team> teams = {
         Team("Evante", "Collins", "Cooper"),
-        Team("Scorpion", "Rasch", "Hines"),
-        Team("Musubu", "Dai", "Tremblay"),
-        Team("Principe", "Venturella", "Saldutti"),
-        Team("Cohete", "Sköld", "Rudolf"),
-        Team("Kobra", "Karhu", "Toledano")
+        // Team("Scorpion", "Rasch", "Hines"),
+        // Team("Musubu", "Dai", "Tremblay"),
+        // Team("Principe", "Venturella", "Saldutti"),
+        // Team("Cohete", "Sköld", "Rudolf"),
+        // Team("Kobra", "Karhu", "Toledano")
     };
     srand(static_cast<unsigned int>(time(nullptr)));
     std::map<std::string, Dice> diceMap = {
@@ -163,10 +158,16 @@ int main()
     std::getline(std::cin, trackName);
     Track track(trackName);
     track.printTrack();
+    std::vector<Driver*> drivers;
+    for (auto& team : teams) {
+        drivers.push_back(&team.getDriver1());
+        drivers.push_back(&team.getDriver2());
+    }
+    setPositions(drivers, track);
     std::cout << "Race begins!!" << std::endl;
     while (true)
     {
-        raceTurn(teams, diceMap, track);
+        raceTurn(drivers, diceMap, track);
         std::cout << "End of race turn. Continue to next? (y/n): ";
         std::string cont;
         std::getline(std::cin, cont);

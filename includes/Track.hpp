@@ -19,3 +19,7 @@ public:
     int getTrackLength() const;
     void printTrack() const;
 };
+
+int getValidTileIndex(const Track& track);
+int getValidLaneIndex(const Track& track, int tileIndex);
+int getValidSquareIndex(const Track& track, int tileIndex, int laneIndex);
