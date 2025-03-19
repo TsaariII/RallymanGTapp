@@ -77,6 +77,44 @@ void Stats::addCrashTokens(const std::string &gear, const std::string &section)
     }
 }
 
+void Stats::addLapTime(const std::string &gear)
+{
+    int timeToAdd = 0;
+
+    if (gear == "00") timeToAdd = 120;  // 2 minutes (120 seconds)
+    else if (gear == "0") timeToAdd = 60; // 1 minute (60 seconds)
+    else if (gear == "1") timeToAdd = 50;
+    else if (gear == "2") timeToAdd = 40;
+    else if (gear == "3") timeToAdd = 30;
+    else if (gear == "4") timeToAdd = 20;
+    else if (gear == "5") timeToAdd = 15;
+    else if (gear == "6") timeToAdd = 10;
+
+    totalTime += timeToAdd;
+
+    if (lapTime.empty()) lapTime.push_back(timeToAdd);
+    else lapTime.back() += timeToAdd;
+}
+
+std::string Stats::getTotalTime() const
+{
+    int minutes = totalTime / 60;
+    int seconds = totalTime % 60;
+    return std::to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + std::to_string(seconds);
+}
+
+std::vector<std::string> Stats::getLapTime() const
+{
+    std::vector<std::string> formattedLaps;
+    for (int time : lapTime)
+    {
+        int minutes = time / 60;
+        int seconds = time % 60;
+        formattedLaps.push_back(std::to_string(minutes) + ":" + (seconds < 10 ? "0" : "") + std::to_string(seconds));
+    }
+    return formattedLaps;
+}
+
 void Stats::resetStats()
 {
     turns = 0;

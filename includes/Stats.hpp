@@ -16,6 +16,8 @@ class Stats
         int weatherToken;
         int yellowFlag;
         int greenFlag;
+        int totalTime;
+        std::vector<int> lapTime;
         std::vector<std::string> diceRolls;
 
     public:
@@ -32,6 +34,8 @@ class Stats
         int getYellowFlag() const;
         int getGreenFlag() const;
         std::vector<std::string> getDiceRolls() const;
+        std::string getTotalTime() const;
+        std::vector<std::string> getLapTime() const;
 
         // Setter functions
         void addCrashTokens(const std::string &gear, const std::string &section);
@@ -45,6 +49,8 @@ class Stats
         void addYellowFlag();
         void addGreenFlag();
         void addDiceRoll(const std::string& roll);
+        void addLapTime(const std::string &gear);
+
         void resetDiceRolls();
         void resetStats();
 };

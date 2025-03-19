@@ -1,6 +1,7 @@
 
 #include "../includes/Dice.hpp"
 #include "../includes/Driver.hpp"
+#include "../includes/Track.hpp"
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
@@ -66,27 +67,27 @@ void coastOrBreak(Driver &driver, const std::vector<std::string> &diceSequence, 
     }
 }
 
-void checkColorInput(Driver &driver, std::string gear, std::string section)
-{
-    while (true)
-    {
-        std::cout << "Enter track section color: ";
-        std::cin >> section;
-        if (section == "O" || section == "Y" || section == "R")
-        {
-            driver.getStats().addCrashTokens(gear, section);
-            std::cout << "Lost control and spun!" << std::endl;
-            break ;
-        }
-        else
-        {
-            std::cin.clear(); // Clear the error state if input failed
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Discard invalid input
-            std::cout << "Please enter O, Y or R." << std::endl;
-        }
-    }
-    return ;
-}
+// void checkColorInput(Driver &driver, std::string gear, std::string section)
+// {
+//     while (true)
+//     {
+//         std::cout << "Enter track section color: ";
+//         std::cin >> section;
+//         if (section == "O" || section == "Y" || section == "R")
+//         {
+//             driver.getStats().addCrashTokens(gear, section);
+//             std::cout << "Lost control and spun!" << std::endl;
+//             break ;
+//         }
+//         else
+//         {
+//             std::cin.clear(); // Clear the error state if input failed
+//             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Discard invalid input
+//             std::cout << "Please enter O, Y or R." << std::endl;
+//         }
+//     }
+//     return ;
+// }
 
 void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<std::string, Dice> &diceMap, Driver &driver, Track &track)
 {
@@ -101,23 +102,23 @@ void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<s
             crash ++;
         if (crash == 3)
         {
-            gear = diceSequence[i];
             coastOrBreak(driver, diceSequence, result);
             std::cout << "You lost control on " << gear << " gear" << std::endl;
-            checkColorInput(driver, gear, track.getTile(driver.getTileIndex()).color);
+            driver.getStats().addCrashTokens(gear, track.getTile(driver.getTileIndex()).color);
+            gear = (std::stoi(gear) >= 3) ? "00" : "0";
+            driver.setCurrentGear(gear);
+            int lane = getValidLaneIndex(track, driver.getTileIndex());
+            driver.setLaneIndex(lane);
+            int sqr = getValidSquareIndex(track, driver.getTileIndex(), lane);
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            driver.setSquareIndex(sqr);
             return ;
         }
         driver.moveForward(track);
-        std::cout << "Enter lane: ";
-        int lane;
-        std::cin >> lane;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        int lane = getValidLaneIndex(track, driver.getTileIndex());
         driver.setLaneIndex(lane);
-        std::cout << "Enter square: ";
-        int sqr;
-        std::cin >> sqr;
+        int sqr = getValidSquareIndex(track, driver.getTileIndex(), lane);
         driver.setSquareIndex(sqr);
-        driver.moveForward(track);
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         std::cout << "Press Enter to continue or type 'exit' to return to dice selection: ";
         std::string choice;
@@ -132,6 +133,7 @@ void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<
     int tokens = diceSequence.size();
     int crash = 0;
     int marked = 0;
+    int moves = 0;
     std::string gear;
     for (size_t i = 0; i < diceSequence.size(); i++)
     {
@@ -148,19 +150,29 @@ void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<
             marked = 1;
         }
     }
+    for (int i = 0; i < tokens; i++)
+        driver.getStats().addFocusToken();
     coastOrBreak(driver, diceSequence, gear);
+    for (int i = 0; i < tokens; i++)
+    {
+        std::cout << "Entering for dice " << i + 1 << std::endl;
+        driver.moveForward(track);
+        int lane = getValidLaneIndex(track, driver.getTileIndex());
+        driver.setLaneIndex(lane);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    }
     if (crash >= 3)
     {
         std::cout << "You lost control on " << gear << " gear" << std::endl;
-        checkColorInput(driver, gear, track.getTile(driver.getTileIndex()).color);
-    }
-    for (int i = 0; i < tokens; i++)
-    {
-        driver.moveForward(track);
-        std::cout << "Enter lane: ";
-        int lane;
-        std::cin >> lane;
+        driver.getStats().addCrashTokens(gear, track.getTile(driver.getTileIndex()).color);
+        gear = (std::stoi(gear) >= 3) ? "00" : "0";
+        driver.setCurrentGear(gear);
+        int lane = getValidLaneIndex(track, driver.getTileIndex());
         driver.setLaneIndex(lane);
+        int sqr = getValidSquareIndex(track, driver.getTileIndex(), lane);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        driver.setSquareIndex(sqr);
     }
     std::cout << "Tokens earned: " << tokens << std::endl;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }

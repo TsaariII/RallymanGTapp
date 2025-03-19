@@ -171,6 +171,7 @@ int main()
         std::cout << "End of race turn. Continue to next? (y/n): ";
         std::string cont;
         std::getline(std::cin, cont);
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         if (cont == "n")
             break;
     }

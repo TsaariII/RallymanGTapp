@@ -148,9 +148,7 @@ int getValidSquareIndex(const Track& track, int tileIndex, int laneIndex)
         std::cerr << "Error: Invalid lane index or empty lane!\n";
         return -1;
     }
-
     int maxSquareIndex = tile.laneSquares.at(laneIndex).size() - 1;
-
     while (true)
     {
         std::cout << "Enter square (0 - " << maxSquareIndex << "): ";
