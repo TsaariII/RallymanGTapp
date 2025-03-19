@@ -86,6 +86,7 @@ void setDriverStartingPosition(Driver* driver, Track& track, std::set<int>& assi
     driver->setLaneIndex(laneIndex);
     int squareIndex = getValidSquareIndex(track, tileIndex, laneIndex);
     driver->setSquareIndex(squareIndex);
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 void raceTurn(std::vector<Driver*> drivers, const std::map<std::string, Dice>& diceMap, Track &track)
@@ -133,7 +134,6 @@ void setPositions(std::vector<Driver*>& drivers, Track& track) {
                   << " from team " << driver->getTeam() << "\n";
         setDriverStartingPosition(driver, track, assignedPositions);
     }
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
 int main()
@@ -171,7 +171,7 @@ int main()
         std::cout << "End of race turn. Continue to next? (y/n): ";
         std::string cont;
         std::getline(std::cin, cont);
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         if (cont == "n")
             break;
     }

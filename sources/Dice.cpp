@@ -132,28 +132,32 @@ void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<
 {
     int tokens = diceSequence.size();
     int crash = 0;
-    int marked = 0;
     int moves = 0;
     std::string gear;
     for (size_t i = 0; i < diceSequence.size(); i++)
     {
+        if (crash == 3)
+        {
+            gear = diceSequence[i - 1];
+            break ;
+        }
         std::cout << diceSequence[i] << " ";
         std::string result = diceMap.at(diceSequence[i]).roll();
         std::cout << result << std::endl;
         if (diceSequence[i] == "B")
+        {
+            moves--;
             tokens -= 1;
+        }
         if (result == "⚠️")
             crash++;
-        if (crash == 3 && !marked)
-        {
-            gear = diceSequence[i];
-            marked = 1;
-        }
+        moves++;
     }
-    for (int i = 0; i < tokens; i++)
-        driver.getStats().addFocusToken();
+    if (gear.empty())
+        gear = diceSequence.back();
+    std::cout << "Gear is: " << gear << std::endl;
     coastOrBreak(driver, diceSequence, gear);
-    for (int i = 0; i < tokens; i++)
+    for (int i = 0; i < moves; i++)
     {
         std::cout << "Entering for dice " << i + 1 << std::endl;
         driver.moveForward(track);
@@ -161,7 +165,7 @@ void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<
         driver.setLaneIndex(lane);
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
-    if (crash >= 3)
+    if (crash == 3)
     {
         std::cout << "You lost control on " << gear << " gear" << std::endl;
         driver.getStats().addCrashTokens(gear, track.getTile(driver.getTileIndex()).color);
@@ -174,5 +178,5 @@ void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<
         driver.setSquareIndex(sqr);
     }
     std::cout << "Tokens earned: " << tokens << std::endl;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
