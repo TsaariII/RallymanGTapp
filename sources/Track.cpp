@@ -120,8 +120,6 @@ int getValidLaneIndex(const Track& track, int tileIndex)
     {
         std::cout << "Enter lane (1 - " << tile.lanes << "): ";
         std::cin >> lane;
-
-        // Correcting the user input (1-based) to match stored lane indices
         if (std::cin.fail() || lane < 1 || lane > tile.lanes)
         {
             std::cin.clear();
@@ -134,7 +132,7 @@ int getValidLaneIndex(const Track& track, int tileIndex)
         }
         else
         {
-            return lane;  // Return as 1-based index (matches storage in `laneSquares`)
+            return lane;
         }
     }
 }

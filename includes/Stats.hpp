@@ -36,6 +36,7 @@ class Stats
         std::vector<std::string> getDiceRolls() const;
         std::string getTotalTime() const;
         std::vector<std::string> getLapTime() const;
+        void printStats();
 
         // Setter functions
         void addCrashTokens(const std::string &gear, const std::string &section);

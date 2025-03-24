@@ -18,6 +18,7 @@ class Driver
         int squareIndex;
         int laneIndex;
         int insideIndex;
+        int startingTile;
     
     public:
         Driver(const std::string &name, const std::string &team);
@@ -28,6 +29,8 @@ class Driver
         void setLaneIndex(const int index);
         void setSquareIndex(const int index);
         void setInsideIndex(const int index);
+        void setStartingTile(const int index);
+        void setLap(const int num);
         void moveForward(const Track& track);
         void changeLane(const Track& track, int direction); // -1 left, +1 right
     
@@ -42,3 +45,4 @@ class Driver
         int getLaneIndex() const;
         int getInsideIndex() const;
     };
+    void changeToValidLane(Track &track, Driver &driver);

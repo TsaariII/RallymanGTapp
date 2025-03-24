@@ -9,7 +9,6 @@
 #include <map>
 
 Dice::Dice(const std::vector<std::string>& sides) : _Sides(sides) {}
-Dice::~Dice() {};
 
 std::string Dice::roll() const
 {
@@ -114,12 +113,7 @@ void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<s
             driver.setSquareIndex(sqr);
             return ;
         }
-        driver.moveForward(track);
-        int lane = getValidLaneIndex(track, driver.getTileIndex());
-        driver.setLaneIndex(lane);
-        int sqr = getValidSquareIndex(track, driver.getTileIndex(), lane);
-        driver.setSquareIndex(sqr);
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        changeToValidLane(track, driver); 
         std::cout << "Press Enter to continue or type 'exit' to return to dice selection: ";
         std::string choice;
         std::getline(std::cin, choice);
@@ -155,15 +149,12 @@ void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<
     }
     if (gear.empty())
         gear = diceSequence.back();
-    std::cout << "Gear is: " << gear << std::endl;
     coastOrBreak(driver, diceSequence, gear);
     for (int i = 0; i < moves; i++)
     {
         std::cout << "Entering for dice " << i + 1 << std::endl;
-        driver.moveForward(track);
-        int lane = getValidLaneIndex(track, driver.getTileIndex());
-        driver.setLaneIndex(lane);
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        changeToValidLane(track, driver); 
+        driver.getStats().addFocusToken();
     }
     if (crash == 3)
     {

@@ -12,7 +12,6 @@ private:
 
 public:
     Dice(const std::vector<std::string> &sides);
-    ~Dice();
     std::string roll() const;
 };
 

@@ -3,6 +3,8 @@
 #include <map>
 #include <sstream>
 #include <set>
+#include <thread>
+#include <chrono> 
 #include "../includes/Dice.hpp"
 #include "../includes/Team.hpp"
 #include "../includes/Driver.hpp"
@@ -81,7 +83,10 @@ void setDriverStartingPosition(Driver* driver, Track& track, std::set<int>& assi
 {
     driver->setPosition(getValidPosition(driver, assignedPositions));
     int tileIndex = getValidTileIndex(track);
+    driver->setStartingTile(tileIndex);
     driver->setTileIndex(tileIndex);
+    if (tileIndex != 0)
+        driver->setLap(-1);
     int laneIndex = getValidLaneIndex(track, tileIndex);
     driver->setLaneIndex(laneIndex);
     int squareIndex = getValidSquareIndex(track, tileIndex, laneIndex);
@@ -100,11 +105,17 @@ void raceTurn(std::vector<Driver*> drivers, const std::map<std::string, Dice>& d
         std::cout << "Now rolling for " << driver->getName()
         << " from team " << driver->getTeam()
         << " (Position " << driver->getPosition() << ")" << std::endl;
+        std ::cout << "\tSTATS\n";
+        driver->getStats().printStats();
         while (true)
         {
             std::cout << "Enter dice for this driver: ";
             std::string input;
-            std::getline(std::cin, input);
+            if (!std::getline(std::cin, input))
+            {
+                std::cout << "\nEOF detected! Exiting turn safely...\n";
+                return;
+            }
             auto diceSequence = parseInput(input);
             if (diceSequence.empty()) {
                 std::cout << "Invalid dice input. Please try again." << std::endl;
@@ -115,12 +126,13 @@ void raceTurn(std::vector<Driver*> drivers, const std::map<std::string, Dice>& d
             std::cin >> choice;
             std::cin.ignore();
             if (choice == 1)
-            rollOneByOne(diceSequence, diceMap, *driver, track);
+                rollOneByOne(diceSequence, diceMap, *driver, track);
             else if (choice == 2)
-            rollAllAtOnce(diceSequence, diceMap, *driver, track);
+                rollAllAtOnce(diceSequence, diceMap, *driver, track);
             else
-            std::cout << "Invalid roll mode. Skipping this driver." << std::endl;
+                std::cout << "Invalid roll mode. Skipping this driver." << std::endl;
             driver->getStats().addTurn();
+            driver->getStats().addLapTime(driver->getCurrentGear());
             break;
         }
     }
@@ -164,6 +176,14 @@ int main()
         drivers.push_back(&team.getDriver2());
     }
     setPositions(drivers, track);
+    for (int i = 1; i <= 5; i++) {
+        std::cout << "\r";
+        for (int j = 0; j < i; j++) {
+            std::cout << "🔴 ";
+        }
+        std::cout << std::flush;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
     std::cout << "Race begins!!" << std::endl;
     while (true)
     {
@@ -171,7 +191,6 @@ int main()
         std::cout << "End of race turn. Continue to next? (y/n): ";
         std::string cont;
         std::getline(std::cin, cont);
-        // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         if (cont == "n")
             break;
     }

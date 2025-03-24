@@ -30,6 +30,19 @@ void Stats::addGreenFlag() { greenFlag++; }
 void Stats::addDiceRoll(const std::string& roll) { diceRolls.push_back(roll); }
 void Stats::resetDiceRolls() { diceRolls.clear(); }
 
+void Stats::printStats() 
+{
+    std::cout << "Turns: " << turns
+            << "\nFocus Tokens: " << focusTokens
+            << "\nUsed focus toksen: " << usedFocusTokens
+            << "\nLost gear dice: " << lostGear
+            << "\nLost brake dice: " << lostBrake
+            << "\nLost coast dice: " << lostCoast
+            << "\nWeather tokens: " << weatherToken
+            << "\nYellow flag: " << yellowFlag
+            << "\nGreen flag: " << greenFlag << std::endl;
+}
+
 void Stats::addCrashTokens(const std::string &gear, const std::string &section)
 {
     int crashTokens = 0;
