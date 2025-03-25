@@ -3,25 +3,27 @@
 #include "Stats.hpp"
 #include "Tile.hpp"
 #include "Track.hpp"
+#include "Tire.hpp"
 #include <string>
 
 class Driver
 {
     private:
-        const std::string name;
-        const std::string team;
-        int position;
-        std::string currentGear;
-        int lap;
-        Stats stats;
-        int tileIndex;    
-        int squareIndex;
-        int laneIndex;
-        int insideIndex;
-        int startingTile;
+        const std::string _Name;
+        const std::string _Team;
+        int _Position;
+        std::string _CurrentGear;
+        int _Lap;
+        Stats _Stats;
+        int _TileIndex;    
+        int _SquareIndex;
+        int _LaneIndex;
+        int _InsideIndex;
+        int _StartingTile;
+        Tire _Tire;
     
     public:
-        Driver(const std::string &name, const std::string &team);
+        Driver(const std::string &_Name, const std::string &_Team, TireType tireType, Weather weather);
     
         void setPosition(int pos);
         void setCurrentGear(const std::string& gear);
@@ -31,8 +33,9 @@ class Driver
         void setInsideIndex(const int index);
         void setStartingTile(const int index);
         void setLap(const int num);
+        void setTire(TireType type, Weather weather);
         void moveForward(const Track& track);
-        void changeLane(const Track& track, int direction); // -1 left, +1 right
+        void changeLane(const Track& track);
     
         Stats &getStats();
         std::string getName() const;
@@ -45,4 +48,4 @@ class Driver
         int getLaneIndex() const;
         int getInsideIndex() const;
     };
-    void changeToValidLane(Track &track, Driver &driver);
+    void changeLaneOrMove(Track &track, Driver &driver);

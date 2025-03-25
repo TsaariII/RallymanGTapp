@@ -8,8 +8,8 @@
 class Track
 {
 private:
-    std::string name;
-    std::vector<Tile> tiles;
+    std::string _Name;
+    std::vector<Tile> _Tiles;
     void loadTrackFromDatabase(const std::string& dbName);
 
 public:

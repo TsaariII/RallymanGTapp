@@ -5,8 +5,10 @@ SRC_DIR = sources
 SRC = $(SRC_DIR)/main.cpp\
 	$(SRC_DIR)/Dice.cpp\
 	$(SRC_DIR)/Driver.cpp\
+	$(SRC_DIR)/Game.cpp\
 	$(SRC_DIR)/Stats.cpp\
 	$(SRC_DIR)/Team.cpp\
+	$(SRC_DIR)/Tire.cpp\
 	$(SRC_DIR)/Track.cpp
 
 

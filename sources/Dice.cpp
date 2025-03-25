@@ -92,8 +92,23 @@ void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<s
 {
     int crash = 0;
     std::string gear;
+    std::vector<std::string> brakeDice;
     for (size_t i = 0; i < diceSequence.size(); i++)
     {
+        if (diceSequence[i] == "B")
+        {
+            brakeDice.push_back("B");
+            continue ;
+        }
+        for (size_t i = 0; i < brakeDice.size(); i++)
+        {
+            std::string bResult = diceMap.at("B").roll();
+            std::cout << bResult << std::endl;
+            if (bResult == "⚠️")
+                crash++;
+        }
+        if (diceSequence[i] != "B")
+            brakeDice.erase(brakeDice.begin(), brakeDice.end());
         std::cout << diceSequence[i] << " ";
         std::string result = diceMap.at(diceSequence[i]).roll();
         std::cout << result << std::endl;
@@ -101,9 +116,10 @@ void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<s
             crash ++;
         if (crash == 3)
         {
-            coastOrBreak(driver, diceSequence, result);
-            std::cout << "You lost control on " << gear << " gear" << std::endl;
-            driver.getStats().addCrashTokens(gear, track.getTile(driver.getTileIndex()).color);
+            if (result == "C" || result == "B")
+                coastOrBreak(driver, diceSequence, result);
+            std::cout << "You lost control on " << result << " gear" << std::endl;
+            driver.getStats().addCrashTokens(result, track.getTile(driver.getTileIndex()).color);
             gear = (std::stoi(gear) >= 3) ? "00" : "0";
             driver.setCurrentGear(gear);
             int lane = getValidLaneIndex(track, driver.getTileIndex());
@@ -113,13 +129,18 @@ void rollOneByOne(const std::vector<std::string> &diceSequence, const std::map<s
             driver.setSquareIndex(sqr);
             return ;
         }
-        changeToValidLane(track, driver); 
+        changeLaneOrMove(track, driver); 
         std::cout << "Press Enter to continue or type 'exit' to return to dice selection: ";
         std::string choice;
         std::getline(std::cin, choice);
         if (choice == "exit")
             return ;
+        if (diceSequence.back() == "C")
+            coastOrBreak(driver, diceSequence, result);
+        gear = diceSequence[i];
+        driver.setCurrentGear(gear);
     }
+    
 }
 
 void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<std::string, Dice> &diceMap, Driver &driver, Track &track)
@@ -153,7 +174,7 @@ void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<
     for (int i = 0; i < moves; i++)
     {
         std::cout << "Entering for dice " << i + 1 << std::endl;
-        changeToValidLane(track, driver); 
+        changeLaneOrMove(track, driver); 
         driver.getStats().addFocusToken();
     }
     if (crash == 3)
@@ -168,6 +189,10 @@ void rollAllAtOnce(const std::vector<std::string> &diceSequence, const std::map<
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         driver.setSquareIndex(sqr);
     }
+    if (diceSequence[moves] == "C")
+        coastOrBreak(driver, diceSequence, gear);
+    gear = diceSequence[moves]; 
+    driver.setCurrentGear(gear);
     std::cout << "Tokens earned: " << tokens << std::endl;
     // std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }

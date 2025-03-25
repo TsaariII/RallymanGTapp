@@ -3,83 +3,90 @@
 #include <iostream>
 
 
-Driver::Driver(const std::string &name, const std::string &team) 
-    : name(name), team(team), position(0), lap(1), tileIndex(0), squareIndex(0), laneIndex(0), startingTile(0) {}
+Driver::Driver(const std::string &_Name, const std::string &_Team, TireType tireType, Weather weather) 
+    : _Name(_Name), _Team(_Team), _Position(0), _CurrentGear("0"), _Lap(1), _TileIndex(0), _SquareIndex(0), _LaneIndex(0), _StartingTile(0), _Tire(tireType, weather) {}
     
-void Driver::setPosition(int pos) { position = pos; }
-void Driver::setCurrentGear(const std::string& gear) { currentGear = gear; }
-void Driver::setTileIndex(const int index) { tileIndex = index; };
-void Driver::setLaneIndex(const int index) { laneIndex = index; };
-void Driver::setSquareIndex(const int index) { squareIndex = index; };
-void Driver::setInsideIndex(const int index) { insideIndex = index; };
-void Driver::setStartingTile(const int index) { startingTile = index; };
-void Driver::setLap(const int num) { lap = num; };
+void Driver::setPosition(int pos) { _Position = pos; }
+void Driver::setCurrentGear(const std::string& gear) { _CurrentGear = gear; }
+void Driver::setTileIndex(const int index) { _TileIndex = index; };
+void Driver::setLaneIndex(const int index) { _LaneIndex = index; };
+void Driver::setSquareIndex(const int index) { _SquareIndex = index; };
+void Driver::setInsideIndex(const int index) { _InsideIndex = index; };
+void Driver::setStartingTile(const int index) { _StartingTile = index; };
+void Driver::setLap(const int num) { _Lap = num; };
+void Driver::setTire(TireType type, Weather weather) { _Tire = Tire(type, weather); };
 
-std::string Driver::getName() const { return name; };
-std::string Driver::getTeam() const { return team; };
-int Driver::getPosition() const { return position; };
-std::string Driver::getCurrentGear() const {return currentGear; };
-int Driver::getLap() const { return lap; };
-Stats& Driver::getStats() { return stats; };
-int Driver::getTileIndex() const { return tileIndex; }
-int Driver::getSquareIndex() const { return squareIndex; }
-int Driver::getLaneIndex() const { return laneIndex; }
-int Driver::getInsideIndex() const { return insideIndex; };
+std::string Driver::getName() const { return _Name; };
+std::string Driver::getTeam() const { return _Team; };
+int Driver::getPosition() const { return _Position; };
+std::string Driver::getCurrentGear() const {return _CurrentGear; };
+int Driver::getLap() const { return _Lap; };
+Stats& Driver::getStats() { return _Stats; };
+int Driver::getTileIndex() const { return _TileIndex; }
+int Driver::getSquareIndex() const { return _SquareIndex; }
+int Driver::getLaneIndex() const { return _LaneIndex; }
+int Driver::getInsideIndex() const { return _InsideIndex; };
 
 void Driver::moveForward(const Track& track)
 {
-    const Tile& currentTile = track.getTile(tileIndex);
-    auto it = currentTile.laneSquares.find(laneIndex);
+    const Tile& currentTile = track.getTile(_TileIndex);
+    auto it = currentTile.laneSquares.find(_LaneIndex);
     if (it == currentTile.laneSquares.end() || it->second.empty())
     {
         std::cerr << "Error: Driver is in a non-existing or empty lane!\n";
         return;
     }
     const std::vector<Square>& currentLaneSquares = it->second;
-    if ((size_t)squareIndex + 1 < currentLaneSquares.size())
+    if ((size_t)_SquareIndex + 1 < currentLaneSquares.size())
     {
-        squareIndex++;
+        _SquareIndex++;
     }
     else
     {
-        tileIndex++;
-        if (tileIndex >= track.getTrackLength())
+        _TileIndex++;
+        if (_TileIndex >= track.getTrackLength())
         {
-            lap++;
-            tileIndex = 0;
+            _Lap++;
+            _TileIndex = 0;
         }
-        const Tile& nextTile = track.getTile(tileIndex);
-        auto nextLaneIt = nextTile.laneSquares.find(laneIndex);
+        const Tile& nextTile = track.getTile(_TileIndex);
+        auto nextLaneIt = nextTile.laneSquares.find(_LaneIndex);
         if (nextLaneIt == nextTile.laneSquares.end() || nextLaneIt->second.empty())
         {
-            std::cerr << "Error: Lane " << laneIndex << " does not exist in tile " << tileIndex << "!\n";
+            std::cerr << "Error: Lane " << _LaneIndex << " does not exist in tile " << _TileIndex << "!\n";
             return;
         }
-        squareIndex = 0;
-        std::cout << name << " moved to tile " << tileIndex << " (" << nextTile.color << ") in lane " << laneIndex << "\n";
+        _SquareIndex = 0;
+        std::cout << _Name << " moved to tile " << _TileIndex << " (" << nextTile.color << ") in lane " << _LaneIndex << "\n";
     }
 }
 
-void Driver::changeLane(const Track& track, int direction)
+void Driver::changeLane(const Track& track)
 {
-    const Tile& currentTile = track.getTile(tileIndex);
-    
-    int newLane = laneIndex + direction;
+    const Tile& currentTile = track.getTile(_TileIndex);
     while (true)
     {
-        if (newLane >= 0 && newLane < currentTile.lanes)
+        int direction;
+        std::cout << "Enter lane change direction (1: Left, -1: Right): ";
+        std::cin >> direction;
+        int newLane = _LaneIndex + direction;
+        std::cout << "new lane: " << newLane << std::endl;
+        if (newLane >= 0 && newLane <= currentTile.lanes)
         {
-            laneIndex = newLane;
-            std::cout << name << " switched to lane " << laneIndex << "\n";
+            _LaneIndex = newLane;
+            std::cout << _Name << " switched to lane " << _LaneIndex << "\n";
+            break ;
         }
         else
         {
-            std::cout << name << " can't switch lanes (out of bounds)\n";
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Invalid lane! Try again.\n";
         }
     }
 }
 
-void changeToValidLane(Track &track, Driver &driver)
+void changeLaneOrMove(Track &track, Driver &driver)
 {
     int action;
     while (true) 
@@ -97,15 +104,8 @@ void changeToValidLane(Track &track, Driver &driver)
             break;
     }
     if (action == 1)
-    {
-        driver.moveForward(track);
-    }
+        driver.moveForward(track); 
     else if (action == 2)
-    {
-        int direction;
-        std::cout << "Enter lane change direction (1: Left, -1: Right): ";
-        std::cin >> direction;
-        driver.changeLane(track, direction);
-    }
+        driver.changeLane(track);
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }

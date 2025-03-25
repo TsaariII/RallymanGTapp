@@ -5,12 +5,12 @@
 
 class Team {
 private:
-    std::string teamName;
-    Driver driver1; // Primary (P)
-    Driver driver2; // Secondary (S)
+    std::string _Name;
+    Driver _Driver1; // Primary (P)
+    Driver _Driver2; // Secondary (S)
 
 public:
-    Team(const std::string& name, const std::string& driver1Name, const std::string& driver2Name);
+    Team(const std::string& name, const std::string& driver1Name, const std::string& driver2Name, TireType tire, Weather weather);
 
     std::string getTeamName() const;
     Driver& getDriver1();

@@ -3,24 +3,24 @@
 #include "../includes/Team.hpp"
 #include "../includes/Tile.hpp"
  
-Team::Team(const std::string& name, const std::string& driver1Name, const std::string& driver2Name)
-    : teamName(name),
-      driver1(driver1Name, name),
-      driver2(driver2Name, name) {}
+Team::Team(const std::string& name, const std::string& driver1Name, const std::string& driver2Name, TireType tire, Weather weather)
+    : _Name(name),
+      _Driver1(driver1Name, name, tire, weather),
+      _Driver2(driver2Name, name, tire, weather) {}
 
 std::string Team::getTeamName() const {
-    return teamName;
+    return _Name;
 }
 
 Driver& Team::getDriver1() {
-    return driver1;
+    return _Driver1;
 }
 
 Driver& Team::getDriver2() {
-    return driver2;
+    return _Driver2;
 }
 
 // void Team::resetTeamStats() {
-//     driver1.resetStats();
-//     driver2.resetStats();
+//     _Driver1.resetStats();
+//     _Driver2.resetStats();
 // }

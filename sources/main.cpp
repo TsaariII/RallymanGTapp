@@ -9,6 +9,7 @@
 #include "../includes/Team.hpp"
 #include "../includes/Driver.hpp"
 #include "../includes/Track.hpp"
+#include "../includes/Game.hpp"
 
 std::vector<std::string> parseInput(const std::string& input)
 {
@@ -73,7 +74,7 @@ void checkPositions(std::vector<Driver*> &drivers, Track &track) {
             int bInsidePriority = tile.getInsidePriority(b->getLaneIndex());
 
             if (aInsidePriority != bInsidePriority)
-                return aInsidePriority < bInsidePriority; // Lower insidePriority is better
+                return aInsidePriority < bInsidePriority;
         }
         return false;
     });
@@ -94,7 +95,7 @@ void setDriverStartingPosition(Driver* driver, Track& track, std::set<int>& assi
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 }
 
-void raceTurn(std::vector<Driver*> drivers, const std::map<std::string, Dice>& diceMap, Track &track)
+void raceRound(std::vector<Driver*> drivers, const std::map<std::string, Dice>& diceMap, Track &track)
 {
     checkPositions(drivers, track);
     std::sort(drivers.begin(), drivers.end(), [](Driver* a, Driver* b) {
@@ -103,6 +104,7 @@ void raceTurn(std::vector<Driver*> drivers, const std::map<std::string, Dice>& d
     for (Driver* driver : drivers)
     {
         std::cout << "Now rolling for " << driver->getName()
+        << " (Gear " << driver->getCurrentGear() << ")"
         << " from team " << driver->getTeam()
         << " (Position " << driver->getPosition() << ")" << std::endl;
         std ::cout << "\tSTATS\n";
@@ -138,61 +140,12 @@ void raceTurn(std::vector<Driver*> drivers, const std::map<std::string, Dice>& d
     }
 }
 
-void setPositions(std::vector<Driver*>& drivers, Track& track) {
-    std::set<int> assignedPositions;
-
-    for (Driver* driver : drivers) {
-        std::cout << "Setting position for " << driver->getName() 
-                  << " from team " << driver->getTeam() << "\n";
-        setDriverStartingPosition(driver, track, assignedPositions);
-    }
-}
-
 int main()
 {
-    std::vector<Team> teams = {
-        Team("Evante", "Collins", "Cooper"),
-        // Team("Scorpion", "Rasch", "Hines"),
-        // Team("Musubu", "Dai", "Tremblay"),
-        // Team("Principe", "Venturella", "Saldutti"),
-        // Team("Cohete", "Sköld", "Rudolf"),
-        // Team("Kobra", "Karhu", "Toledano")
-    };
-    srand(static_cast<unsigned int>(time(nullptr)));
-    std::map<std::string, Dice> diceMap = {
-        {"1", createDice("1")}, {"2", createDice("2")},
-        {"3", createDice("3")}, {"4", createDice("4")},
-        {"5", createDice("5")}, {"6", createDice("6")},
-        {"C", createDice("C")}, {"B", createDice("B")}
-    };
     std::string trackName;
     std::cout << "Enter track name: ";
     std::getline(std::cin, trackName);
-    Track track(trackName);
-    track.printTrack();
-    std::vector<Driver*> drivers;
-    for (auto& team : teams) {
-        drivers.push_back(&team.getDriver1());
-        drivers.push_back(&team.getDriver2());
-    }
-    setPositions(drivers, track);
-    for (int i = 1; i <= 5; i++) {
-        std::cout << "\r";
-        for (int j = 0; j < i; j++) {
-            std::cout << "🔴 ";
-        }
-        std::cout << std::flush;
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-    std::cout << "Race begins!!" << std::endl;
-    while (true)
-    {
-        raceTurn(drivers, diceMap, track);
-        std::cout << "End of race turn. Continue to next? (y/n): ";
-        std::string cont;
-        std::getline(std::cin, cont);
-        if (cont == "n")
-            break;
-    }
+    Game game(trackName);
+    game.start();
     return 0;
 }

@@ -7,23 +7,25 @@
 class Stats
 {
     private:
-        int turns;
-        int focusTokens;
-        int usedFocusTokens;
-        int lostGear;
-        int lostBrake;
-        int lostCoast;
-        int weatherToken;
-        int yellowFlag;
-        int greenFlag;
-        int totalTime;
-        std::vector<int> lapTime;
-        std::vector<std::string> diceRolls;
+        int _Turns;
+        int _FocusTokens;
+        int _UsedFocusTokens;
+        int _LostGear;
+        int _LostBrake;
+        int _LostCoast;
+        int _WeatherToken;
+        int _YellowFlag;
+        int _GreenFlag;
+        int _NormalTire;
+        int _WetTire;
+        int _SoftTire;
+        int _TotalTime;
+        std::vector<int> _LapTime;
+        std::vector<std::string> _DiceRolls;
 
     public:
-        Stats();  // Constructor
+        Stats();
 
-        // Getter functions
         int getTurns() const;
         int getFocusTokens() const;
         int getUsedFocusTokens() const;
@@ -33,12 +35,14 @@ class Stats
         int getWeatherToken() const;
         int getYellowFlag() const;
         int getGreenFlag() const;
+        int getNormalTire() const;
+        int getWetTire() const;
+        int getSoftTire() const;
         std::vector<std::string> getDiceRolls() const;
         std::string getTotalTime() const;
         std::vector<std::string> getLapTime() const;
         void printStats();
 
-        // Setter functions
         void addCrashTokens(const std::string &gear, const std::string &section);
         void addTurn();
         void addFocusToken();
@@ -49,6 +53,9 @@ class Stats
         void addWeatherToken();
         void addYellowFlag();
         void addGreenFlag();
+        void addNormalTire(); 
+        void addWetTire();
+        void addSoftTire(); 
         void addDiceRoll(const std::string& roll);
         void addLapTime(const std::string &gear);
 

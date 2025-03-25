@@ -2,7 +2,7 @@
 #include "../includes/Track.hpp"
 #include <iostream>
 
-Track::Track(const std::string& trackName, const std::string& dbName) : name(trackName) {
+Track::Track(const std::string& trackName, const std::string& dbName) : _Name(trackName) {
     loadTrackFromDatabase(dbName);
 }
 
@@ -26,7 +26,7 @@ void Track::loadTrackFromDatabase(const std::string& dbName)
         return;
     }
 
-    sqlite3_bind_text(stmt, 1, name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, _Name.c_str(), -1, SQLITE_STATIC);
     
     while (sqlite3_step(stmt) == SQLITE_ROW)
     {
@@ -60,7 +60,7 @@ void Track::loadTrackFromDatabase(const std::string& dbName)
             std::cerr << "SQL error fetching squares: " << sqlite3_errmsg(db) << std::endl;
         }
 
-        tiles.push_back(std::move(tile));  // ✅ Push after loading squares
+        _Tiles.push_back(std::move(tile));  // ✅ Push after loading squares
     }
 
     sqlite3_finalize(stmt);
@@ -68,24 +68,24 @@ void Track::loadTrackFromDatabase(const std::string& dbName)
 }
 
 const Tile& Track::getTile(int index) const {
-    return tiles.at(index);
+    return _Tiles.at(index);
 }
 
 std::string Track::getName() const {
-    return name;
+    return _Name;
 }
 
 int Track::getTrackLength() const {
-    return tiles.size();
+    return _Tiles.size();
 }
 
 void Track::printTrack() const
 {
-    std::cout << "Track: " << name << " (Length: " << tiles.size() << " tiles)\n";
-    for (size_t i = 0; i < tiles.size(); ++i)
+    std::cout << "Track: " << _Name << " (Length: " << _Tiles.size() << " _Tiles)\n";
+    for (size_t i = 0; i < _Tiles.size(); ++i)
     {
-        std::cout << "Tile " << i  << " (" << tiles[i].color << "): ";
-        for (const auto& [lane, squares] : tiles[i].laneSquares)
+        std::cout << "Tile " << i  << " (" << _Tiles[i].color << "): ";
+        for (const auto& [lane, squares] : _Tiles[i].laneSquares)
         {
             std::cout << "[Lane " << lane << ": Squares " << squares.size() << "] ";
         }
