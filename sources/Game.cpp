@@ -58,7 +58,6 @@ void Game::_SetTires() {
             else if (choice == 3) selectedTire = TireType::Wet;
 
             driver->setTire(selectedTire, _Weather);  // Set tire with current weather
-            // std::cout << "Set " << driver->getName() << "'s tire to " << driver->getTireTypeAsString() << "\n";
         }
     }
 
@@ -93,10 +92,8 @@ void Game::_RaceLoop()
         {"5", createDice("5")}, {"6", createDice("6")},
         {"C", createDice("C")}, {"B", createDice("B")}
     };
-    std::cout << "blorp" << std::endl;
     while (true)
     {
-        std::cout << "blorp1" << std::endl;
         raceRound(_Drivers, diceMap, _Track);
         std::cout << "End of race turn. Continue to next? (y/n): ";
         std::string cont;
@@ -236,7 +233,6 @@ void Game::raceRound(std::vector<Driver*> drivers, const std::map<std::string, D
 }
 
 void Game::start() {
-    //_SetWeather();
     _SetupGame();
     _DriverPositions();
    _PrintCountdown();
