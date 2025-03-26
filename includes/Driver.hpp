@@ -9,8 +9,8 @@
 class Driver
 {
     private:
-        const std::string _Name;
-        const std::string _Team;
+        std::string _Name;
+        std::string _Team;
         int _Position;
         std::string _CurrentGear;
         int _Lap;

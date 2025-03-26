@@ -21,8 +21,11 @@ class Game
         void _RaceLoop();
         
     public:
-        Game(const std::string &trackName);
-        void start();
+    Game(const std::string &trackName);
+    void start();
+    void setDriverStartingPosition(Driver* driver, Track& track, std::set<int>& assignedPositions);
+    void raceRound(std::vector<Driver*> drivers, const std::map<std::string, Dice>& diceMap, Track &track);
+    void checkPositions(std::vector<Driver*> &drivers, Track &track);
+    int getValidPosition(Driver *driver, std::set<int>& assignedPositions);
+    std::vector<std::string> parseInput(const std::string& input);
 };
-void setDriverStartingPosition(Driver* driver, Track& track, std::set<int>& assignedPositions);
-void raceRound(std::vector<Driver*> drivers, const std::map<std::string, Dice>& diceMap, Track &track);
