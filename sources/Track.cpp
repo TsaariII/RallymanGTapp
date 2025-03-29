@@ -2,8 +2,24 @@
 #include "../includes/Track.hpp"
 #include <iostream>
 
+bool    Track::verifyTrackName( const std::string& trackName, const std::string& dbName) {
+    for (auto it = _tracks.begin(); it != _tracks.end(); it++)
+    {
+        if (trackName == *it)
+        {
+            // also insert here to check inside the tracks directory if we have it
+
+            return (true);
+        }
+    }
+    return (false);
+}
+
 Track::Track(const std::string& trackName, const std::string& dbName) : _Name(trackName) {
-    loadTrackFromDatabase(dbName);
+    if (verifyTrackName(trackName, dbName));
+        loadTrackFromDatabase(dbName);
+    else
+        return ;
 }
 
 void Track::loadTrackFromDatabase(const std::string& dbName)

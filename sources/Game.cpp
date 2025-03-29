@@ -234,6 +234,6 @@ void Game::raceRound(std::vector<Driver*> drivers, const std::map<std::string, D
 void Game::start() {
     _SetupGame();
     _DriverPositions();
-   _PrintCountdown();
+    _PrintCountdown();
     _RaceLoop();
 }
