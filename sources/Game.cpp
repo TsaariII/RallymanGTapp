@@ -60,7 +60,6 @@ void Game::_SetTires() {
             driver->setTire(selectedTire, _Weather);  // Set tire with current weather
         }
     }
-
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Clean leftover input
 }
 
