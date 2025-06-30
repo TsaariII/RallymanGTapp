@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+
+  acme-companion:
+    image: nginxproxy/acme-companion
+    depends_on:
+      - nginx-proxy
+    environment:
+      - DEFAULT_EMAIL=felipecaraballo91@hotmail.com  # Change this
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    volumes_from:
+      - nginx-proxy
+
+  frontend:
+    build: ./frontend
+    environment:
+      - VIRTUAL_HOST=yourdomain.com          # Your main domain
+      - LETSENCRYPT_HOST=yourdomain.com
+      - LETSENCRYPT_EMAIL=felipecaraballo91@hotmail.com
+    expose:
+      - "9000"
+
+  backend:
+    build: ./backend
+    environment:
+      - VIRTUAL_HOST=api.yourdomain.com      # API subdomain
+      - LETSENCRYPT_HOST=api.yourdomain.com
+      - LETSENCRYPT_EMAIL=your-email@example.com
+    expose:
+      - "3000"
+
+volumes:
+  certs:
+  vhost:
+  html:
