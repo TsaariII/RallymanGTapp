@@ -157,6 +157,7 @@ class Game:
         positions: Set[int]
     ) -> None:
         """Set grid and on-track starting tile/lane/square for one driver."""
+        # self.track.print_track()
         driver.position = self.prompt_starting_grid_position(driver, positions)
         tile_idx = prompt_tile_index(self.track)
         driver.starting_tile = tile_idx
@@ -230,4 +231,4 @@ class Game:
         self.set_tires()
         self.set_driver_positions()
         self.print_countdown()
-        self.race_loop
+        self.race_loop()

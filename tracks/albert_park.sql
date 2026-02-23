@@ -29,7 +29,7 @@ INSERT INTO tracks (name) VALUES ('Albert Park');
 
 -- Insert Tiles
 INSERT INTO tiles (track_id, position, color, lanes) VALUES
-    ((SELECT id FROM tracks WHERE name='Albert Park'), 1, 'Y', 3),
+    ((SELECT id FROM tracks WHERE name='Albert Park'), 1, 'O', 3),
     ((SELECT id FROM tracks WHERE name='Albert Park'), 2, 'Y', 3),
     ((SELECT id FROM tracks WHERE name='Albert Park'), 3, 'Y', 3),
     ((SELECT id FROM tracks WHERE name='Albert Park'), 4, 'O', 3),

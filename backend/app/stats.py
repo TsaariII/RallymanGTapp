@@ -18,8 +18,8 @@ class Stats:
         self.wet_tire = 0
         self.soft_tire = 0
         self.total_time = 0
-        self.lap_time: list[int] = field(default_factory=list)
-        self.dice_rolls: list[str] = field(default_factory=list)
+        self.lap_time: list[int] = []
+        self.dice_rolls: list[str] = []
 
     @property
     def total_time_str(self) -> str:
@@ -96,15 +96,17 @@ class Stats:
 
     def print_stats(self) -> None:
         print("|==============================|")
-        print(f"Turns: {self.turns}")
-        print(f"Focus Tokens: {self.focus_tokens}")
-        print(f"Used focus tokens: {self.used_focus_tokens}")
-        print(f"Lost gear dice: {self.lost_gear}")
-        print(f"Lost brake dice: {self.lost_brake}")
-        print(f"Lost coast dice: {self.lost_coast}")
-        print(f"Weather tokens: {self.weather_token}")
-        print(f"Yellow flag: {self.yellow_flag}")
-        print(f"Green flag: {self.green_flag}")
+        print(f"\tLap time: {self.lap_time_str}")
+        print(f"\tTotal time: {self.total_time_str}")
+        print(f"\tTurns: {self.turns}")
+        print(f"\tFocus Tokens: {self.focus_tokens}")
+        print(f"\tUsed focus tokens: {self.used_focus_tokens}")
+        print(f"\tLost gear dice: {self.lost_gear}")
+        print(f"\tLost brake dice: {self.lost_brake}")
+        print(f"\tLost coast dice: {self.lost_coast}")
+        print(f"\tWeather tokens: {self.weather_token}")
+        print(f"\tYellow flag: {self.yellow_flag}")
+        print(f"\tGreen flag: {self.green_flag}")
         print("|==============================|")
 
     def reset_stats(self) -> None:

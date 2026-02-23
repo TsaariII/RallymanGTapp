@@ -3,6 +3,7 @@ from __future__ import annotations
 import sqlite3
 from dataclasses import dataclass, field
 from typing import Dict, List
+from db_init import DB_PATH, init_tracks_db
 
 @dataclass
 class Square:
@@ -19,8 +20,7 @@ class Tile:
 
     def add_square(self, lane: int, pos: int, inside: int) -> None:
          """Add a square to a lane on this tile."""
-         if lane not in self.lane_squares:
-            self.lane_squares.setdefault(lane, []).append(
+         self.lane_squares.setdefault(lane, []).append(
             Square(lane=lane, pos=pos, inside=inside)
          )
 
@@ -37,7 +37,8 @@ class Track:
     tiles: List[Tile] = field(default_factory=list)
 
     def __post_init__(self) -> None:
-        self.load_from_database("tracks.db")
+        init_tracks_db(DB_PATH)
+        self.load_from_database(str(DB_PATH))
 
     @property
     def length(self) -> int:
@@ -50,6 +51,7 @@ class Track:
     
     def load_from_database(self, db_name: str) -> None:
         """Populate tiles from the SQLite database."""
+        db_name = str(db_name)
         try:
             with sqlite3.connect(db_name) as conn:
                 cur = conn.cursor()
@@ -78,17 +80,19 @@ class Track:
                     for lane, pos, inside_lane in cur.fetchall():
                         tile.add_square(lane=lane, pos=pos, inside=inside_lane)
                     self.tiles.append(tile)
+                self.print_track()
+                pass
         except sqlite3.Error as e:
                 print(f"Can't open database '{db_name}': {e}")
         
-        def print_track(self) -> None:
-            """Debug-print the full track layout."""
-            print(f"Track: {self.name} (length: {self.length})")
-            for i, tile in enumerate(self.tiles):
-                print(f"Tile {i} ({tile.color}): ", end="")
-                for lane, squares in tile.lane_squares.items():
-                    print(f"[Lane {lane}: {len(squares)} squares]", end="")
-                print()
+    def print_track(self) -> None:
+        """Debug-print the full track layout."""
+        print(f"Track: {self.name} (length: {self.length})")
+        for i, tile in enumerate(self.tiles):
+            print(f"Tile {i} ({tile.color}): ", end="")
+            for lane, squares in tile.lane_squares.items():
+                print(f"[Lane {lane}: {len(squares)} squares]", end="")
+            print()
 
 def prompt_tile_index(track: Track) -> int:
     """Prompt the user for a starting tile index."""
@@ -128,10 +132,10 @@ def prompt_square_index(track: Track, tile_idx: int, lane_idx: int) -> int:
     if not squares:
         print('Warning: lane has no squares, defaulting to 0')
         return 0
-    max_idx = len(squares) - 1
+    max_idx = len(squares) #- 1
     while True:
         try:
-            sqr = int(f"Enter square index (0 - {max_idx}): ")
+            sqr = int(input(f"Enter square index (1 - {max_idx}): "))
         except ValueError:
             print('Invalid square! Try again.')
             continue
