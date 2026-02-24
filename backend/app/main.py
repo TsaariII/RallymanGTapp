@@ -6,7 +6,7 @@ def main() -> None:
     if not track_name:
         print('No track name provided. Exiting.')
         return
-    init_tracks_db()
+    # init_tracks_db()
     game = Game(track_name)
     game.start()
 

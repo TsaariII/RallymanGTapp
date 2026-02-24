@@ -120,7 +120,7 @@ class Game:
                 pos = int(
                     input(
                         f"Enter position for {driver.name} from team "
-                        f"{driver.team} (1-12): "  
+                        f"{driver.team} (1-12): "
                     )
                 )
             except ValueError:
@@ -151,6 +151,21 @@ class Game:
             return (-lap, -tile_idx, -square_idx, inside)
         drivers. sort(key=key_func)
     
+    def _is_square_free(
+        self,
+        tile_idx: int,
+        lane_idx: int,
+        square_idx: int,
+        ignore_driver=None,
+    ) -> bool:
+        """True if no other driver occupies (tile_idx, lane_idx, square_idx)."""
+        for d in self.drivers:  # adjust if your list is named differently
+            if ignore_driver is not None and d is ignore_driver:
+                continue
+            if (d.tile_idx, d.lane_idx, d.square_idx) == (tile_idx, lane_idx, square_idx):
+                return False
+        return True
+
     def set_driver_starting_position(
         self,
         driver: Driver,
@@ -159,14 +174,19 @@ class Game:
         """Set grid and on-track starting tile/lane/square for one driver."""
         # self.track.print_track()
         driver.position = self.prompt_starting_grid_position(driver, positions)
-        tile_idx = prompt_tile_index(self.track)
+        while True:
+            tile_idx = prompt_tile_index(self.track)
+            if tile_idx != 0:
+                driver.lap = 0
+            lane_idx = prompt_lane_index(self.track, tile_idx)
+            square_idx = prompt_square_index(self.track, tile_idx, lane_idx)
+            if not self._is_square_free(tile_idx, lane_idx, square_idx, ignore_driver=driver):
+                print("Square already occupied! Pick another.")
+                continue
+            break
         driver.starting_tile = tile_idx
         driver.tile_idx = tile_idx
-        if tile_idx != 0:
-            driver.lap = 0
-        lane_idx = prompt_lane_index(self.track, tile_idx)
         driver.lane_idx = lane_idx
-        square_idx = prompt_square_index(self.track, tile_idx, lane_idx)
         driver.square_idx = square_idx
     
     def race_round(
