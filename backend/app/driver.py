@@ -19,13 +19,18 @@ class Driver:
         self.starting_tile: int = 0
         self.tires: Tire = Tire(tires, weather)
     
+    # def check_movement(self, track: Track) -> None:
+    #     """Validate movement to the next square"""
+    #     if 
+
     def move_forward(self, track: Track) -> None:
         """Move the driver one square forward along the current lane."""
         tile = track.tile(self.tile_idx)
-        lane_squares = tile.lane_squares.get(self.square_idx)
+        lane_squares = tile.lane_squares.get(self.lane_idx)
         if not lane_squares:
             print("Error: driver is in a non-existing or empty lane!")
             return
+        # self.check_movement(track)
         if self.square_idx + 1 < len(lane_squares):
             self.square_idx += 1
             return
@@ -40,7 +45,7 @@ class Driver:
             return
         self.square_idx = 0
         print(
-            f"{self.name} movedd to tile {self.tile_idx}"
+            f"{self.name} moved to tile {self.tile_idx + 1}"
             f"({next_tile.color}) in lane {self.lane_idx}"
         )
 

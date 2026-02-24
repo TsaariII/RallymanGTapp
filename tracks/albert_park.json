@@ -1,0 +1,842 @@
+{
+  "name": "Albert Park",
+  "tiles": [
+    {
+      "number": 1,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1},
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {"inside": 3},
+            {"inside": 3}
+          ]             
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {
+              "inside": 2,
+              "max_gear": 3,
+              "max_gear_enter": 2,
+              "max_gear_enter_lane": 2
+            },
+            {
+              "inside": 1,
+              "max_gear": 3,
+              "max_gear_enter": 1,
+              "max_gear_enter_lane": 1,
+              "max_gear_exit": 1,
+              "max_gear_exit_lane": 1,
+              "merge": "M1"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"merge": "M1"},
+            {"merge": "M3"}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {
+              "inside": 1,
+              "max_gear": 3,
+              "max_gear_enter": 1,
+              "max_gear_enter_lane": 3,
+              "max_gear_exit": 1,
+              "max_gear_exit_lane": 2
+            },
+            {
+              "inside": 2,
+              "max_gear": 3,
+              "max_gear_exit": 2,
+              "max_gear_exit_lane": 2,
+              "merge": "M3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1},
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2},
+            {"inside": 2}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "color": "O",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {
+              "inside": 2,
+              "max_gear": 2,
+              "max_gear_enter": [1, 2],
+              "max_gear_enter_lane": [1, 2],
+              "max_gear_exit": 1,
+              "max_gear_exit_lane": 1,
+              "merge": "M1"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"merge": "M1"}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {
+              "inside": 1,
+              "max_gear": 2
+            },
+            {
+              "inside": 1,
+              "max_gear": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "color": "O",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 3},
+            {
+              "inside": 1,
+              "max_gear": 2
+            },
+            {
+              "inside": 1,
+              "max_gear": 2
+            },
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"merge": "M3"},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 1},
+            {
+              "inside": 2,
+              "max_gear": 2,
+              "max_gear_enter": 1,
+              "max_gear_enter_lane": 3,
+              "max_gear_exit": 1,
+              "max_gear_exit_lane": 3,
+              "merge": "M3"
+            },
+            {"inside": 3}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {
+              "inside": 1,
+              "max_gear": 3,
+              "max_gear_enter": 2,
+              "max_gear_enter_lane": 1,
+              "max_gear_exit": 2,
+              "max_gear_exit_lane": 1
+            },
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"merge": "M3"},
+            {"merge": "M3"},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {
+              "inside": 2,
+              "max_gear": 3,
+              "merge": "M3"
+            },
+            {
+              "inside": 2,
+              "max_gear": 3,
+              "merge": "M3"
+            },
+            {"inside": 3}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "color": "O",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1},
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {"inside": 3},
+            {"inside": 3}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {
+              "inside": 1,
+              "max_gear": 2,
+              "enter_warning": 1,
+              "enter_warning_lane": 1,
+              "exit_warning": 1,
+              "exit_warning_lane": 1,
+              "merge": "M1"
+            },
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"merge": "M3"},
+            {"merge": "M1"},
+            {"merge": "M3"}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {
+              "inside": 2,
+              "merge": "M3"
+            },
+            {
+              "inside": 2,
+              "max_gear": 2
+            },
+            {
+              "inside": 2,
+              "max_gear": 2
+            },
+            {
+              "inside": 2,
+              "merge": "M3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {
+              "inside": 1,
+              "max_gear": 4,
+              "max_gear_enter": 3,
+              "max_gear_enter_lane": 1,
+              "max_gear_exit": 3,
+              "max_gear_exit_lane": 1
+            },
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"merge": "M3"},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {
+              "inside": 3,
+              "max_gear_else_warning": 4,
+              "merge": "M3"
+            },
+            {"inside": 3}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {"inside": 3}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "color": "O",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {
+              "inside":2,
+              "max_gear": 2,
+              "max_gear_enter": 1,
+              "max_gear_enter_lane": 1,
+              "max_gear_exit": 1,
+              "max_gear_exit_lane": 1,
+              "merge": "M1"
+            },
+            {"inside": 3}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"merge": "M1"},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {
+              "inside": 1,
+              "max_gear": 2
+            },
+            {
+              "inside": 1,
+              "max_gear": 2
+            },
+            {"inside": 3}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "color": "O",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 3},
+            {"inside": 3},
+            {"inside": 3}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "color": "O",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1},
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {"inside": 3}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1},
+            {
+              "inside": 1,
+              "max_gear": 4,
+              "max_gear_enter": [3, 4],
+              "max_gear_enter_lane": [1, 2],
+              "merge": "M1"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"merge": "M1"}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {
+              "inside": 2,
+              "max_gear_else_warning": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "color": "O",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1},
+            {
+              "inside": 1,
+              "max_gear": 5,
+              "max_gear_enter": 4,
+              "max_gear_enter_lane": 1,
+              "max_gear_exit": 4,
+              "max_gear_exit_lane": 1
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2},
+            {"merge": "M3"}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {"inside": 3},
+            {
+              "inside": 2,
+              "max_gear": 5,
+              "merge": "M3"
+            },
+            {
+              "inside": 2,
+              "max_gear": 5,
+              "merge": "M3"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 16,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {"inside": 3}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1},
+            {
+              "inside": 1,
+              "max_gear": 2,
+              "max_gear_enter": [1, 2],
+              "max_gear_enter_lane": [1, 2],
+              "max_gear_exit": [1, 2],
+              "max_gear_exit_lane": [1, 2],
+              "merge": "M1"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2},
+            {"merge": "M1"}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {"inside": 3},
+            {
+              "inside": 2,
+              "max_gear":2
+            },
+            {
+              "inside": 2,
+              "max_gear": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {"inside": 3}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 19,
+      "color": "O",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {
+              "inside": 2,
+              "max_gear": 2,
+              "max_gear_enter": [1, 2],
+              "max_gear_enter_lane": [1, 2],
+              "max_gear_exit": [1, 2],
+              "max_gear_exit_lane": [1, 2],
+              "merge": "M1"
+            },
+            {"inside": 3},
+            {"inside": 3}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"merge": "M1"},
+            {"inside": 2},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {
+              "inside": 1,
+              "max_gear": 2
+            },
+            {
+              "inside": 1,
+              "max_gear": 2
+            },
+            {"inside": 1},
+            {"inside": 1}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 20,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 3},
+            {
+              "inside": 1,
+              "max_gear": 1
+            },
+            {
+              "inside": 1,
+              "max_gear": 1
+            },
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"merge": "M3"},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 2},
+            {
+              "inside": 2,
+              "max_gear": 1,
+              "enter_warning": 1,
+              "enter_warning_lane": 3,
+              "exit_warning": 1,
+              "exit_warning_lane": 3
+            },
+            {"inside": 3}
+          ]
+        }
+      ]
+    },
+    {
+      "number": 21,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {
+              "inside": 1,
+              "max_gear": 2,
+              "max_gear_enter": 1,
+              "max_gear_enter_lane": 1,
+              "max_gear_exit": [1, 2],
+              "max_gear_exit_lane": [1, 2],
+              "merge": "M1"
+            }
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"merge": "M1"}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {
+              "inside": 2,
+              "max_gear": 2
+            },
+            {
+              "inside": 2,
+              "max_gear": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 22,
+      "color": "Y",
+      "lanes": [
+        {
+          "index": 1,
+          "squares": [
+            {"inside": 1},
+            {"inside": 1},
+            {"inside": 1}
+          ]
+        },
+        {
+          "index": 2,
+          "squares": [
+            {"inside": 2},
+            {"inside": 2},
+            {"inside": 2}
+          ]
+        },
+        {
+          "index": 3,
+          "squares": [
+            {"inside": 3},
+            {"inside": 3},
+            {"inside": 3}
+          ]
+        }
+      ]
+    }
+  ]
+}
