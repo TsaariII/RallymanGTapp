@@ -2,7 +2,7 @@ from __future__ import annotations
 import random
 from typing import Dict, List
 from driver import Driver, change_lane_or_move
-from track import Track, prompt_lane_index, prompt_square_index
+from track import Track, prompt_tile_index, prompt_lane_index, prompt_square_index
 
 class Dice:
     def __init__(self, sides: List[str]) -> None:
@@ -73,6 +73,10 @@ def roll_one_by_one(
             breaks.clear()
         print(symbol, end=' ')
         result = dice[symbol].roll()
+        if result == '⚠️':
+            result = symbol
+        if result in {'⬜️', '🟥'}:
+           result = coast_or_brake(driver, seq, result)
         print(result)
         if result == '⚠️':
             crash += 1
@@ -94,12 +98,13 @@ def roll_one_by_one(
             square = prompt_square_index(track, driver.tile_idx, lane)
             driver.square_idx = square
             return
-        change_lane_or_move(track, driver)
-        choice = input(
-            'Press Enter to continue or type exit to return to dice selection: '
-        ).strip()
-        if choice == 'exit':
-            return
+        change_lane_or_move(track, driver, crash, result)
+        if symbol != seq[-1]:
+            choice = input(
+                'Press Enter to continue or type exit to return to dice selection: '
+            ).strip()
+            if choice == 'exit':
+                return
         if seq and seq[-1] == 'C':
             gear = coast_or_brake(driver, seq, result)
         else:
@@ -130,23 +135,57 @@ def roll_all_at_once(
         if result == '⚠️':
             crash += 1
         moves += 1
-    if not gear and seq:
-        gear = seq[-1]
-    gear = coast_or_brake(driver, seq, gear)
+        if not gear and seq:
+            gear = seq[-1]
+        gear = coast_or_brake(driver, seq, gear)
     for i in range(moves):
-        print(f"Entering for dice {i + 1}")
-        change_lane_or_move(track, driver)
+        # print(f"Entering for dice {i + 1}")
+        # prev_gear = seq[i]
+        # if seq[i] in {'C', 'B'}:
+        #     prev_gear = coast_or_brake(driver, seq, prev_gear)
+        # change_lane_or_move(track, driver, crash, prev_gear)
         driver.stats.focus_tokens += 1
     if crash == 3:
         print(f"You lost control on {gear} gear")
         tile_color = track.tile(driver.tile_idx).color
         driver.stats.add_crash_tokens(gear, tile_color)
-    try:
-        gear_num = int(gear)
-    except ValueError:
-        gear_num = 0
-    penalty_gear = '00' if gear_num >= 3 else '0'
-    driver.current_gear = penalty_gear
+        try:
+            gear_num = int(gear)
+        except ValueError:
+            gear_num = 0
+        penalty_gear = '00' if gear_num >= 3 else '0'
+        driver.current_gear = penalty_gear
+        while True:
+            try:
+                tile_num = int(input(f"Enter tile number (1 - {track.length}): "))
+            except ValueError:
+                print("Invalid tile! Try again.")
+                continue
+            if 1 <= tile_num <= track.length:
+                tile_num -= 1
+                break
+            print("Invalid tile! Try again.")
+            driver.tile_idx = tile_num
+        lane = prompt_lane_index(track, driver.tile_idx)
+        driver.lane_idx = lane
+        square = prompt_square_index(track, driver.tile_idx, lane)
+        driver.square_idx = square
+        print(f"{driver.name} is on gear {driver.current_gear}")
+        print(f"Tokens earned: {tokens}")
+        return
+    tile_num = 0
+    while True:
+        try:
+            tile_num = int(input(f"Enter tile number (1 - {track.length}): "))
+        except ValueError:
+            print("Invalid tile! Try again.")
+            continue
+        if 1 <= tile_num <= track.length:
+            tile_num -= 1
+            break
+        print("Invalid tile! Try again.")
+    # print(f"Tile number: {track.tiles[tile_num].number}")
+    driver.tile_idx = tile_num
     lane = prompt_lane_index(track, driver.tile_idx)
     driver.lane_idx = lane
     square = prompt_square_index(track, driver.tile_idx, lane)
@@ -155,8 +194,10 @@ def roll_all_at_once(
         last_idx = moves
     else:
         last_idx = len(seq) - 1
-    if last_idx >= 0 and seq[last_idx] == 'C':
-        gear = coast_or_brake(driver, seq, gear)
     if last_idx >= 0:
         driver.current_gear = seq[last_idx]
+    if last_idx >= 0 and seq[last_idx] == 'C':
+        driver.current_gear = coast_or_brake(driver, seq, gear)
+        print(f"Gear: {gear}")
+    print(f"{driver.name} is on gear {driver.current_gear}")
     print(f"Tokens earned: {tokens}")

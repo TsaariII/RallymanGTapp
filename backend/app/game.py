@@ -97,7 +97,7 @@ class Game:
             t = token.strip().upper()
             if not t:
                 continue
-            if t in {'C', 'B'}:
+            if t in {'C', 'B', '00'}:
                 seq.append(t)
             else:
                 if not t.isdigit():
@@ -132,25 +132,74 @@ class Game:
             positions.add(pos)
             return pos
     
+    def _gear_value_int(self, gear: str) -> int:
+        """Convert a gear string to an int for sorting.
+
+        Rallyman GT sometimes uses '00' to represent a crash penalty gear.
+        We treat that as lower than 0.
+        """
+        if gear == '00':
+            return -1
+        try:
+            return int(gear)
+        except Exception:
+            return -1
+
+    def _indside_lane_value(self, driver: Driver) -> int:
+        """Lower is more inside. Falls back to 100 if unknown."""
+        if not (0 <= driver.tile_idx < self.track.length):
+            return 100
+        tile = self.track.tile(driver.tile_idx)
+        squares = tile.lane_squares.get(driver.lane_idx)
+        if not squares or not (0 <= driver.square_idx < len(squares)):
+            return 100
+        inside = tile.square_data(driver.lane_idx, driver.square_idx).get("inside")
+        if inside is None:
+            return 100
+        try:
+            return int(inside)
+        except Exception:
+            return 100
+
     def check_positions(self, drivers: List[Driver]) -> None:
+        """Update each driver's race position (1 = leader).
+
+        Race order rules (leaderboard):
+        - who is on the latest lap
+        - who is further on the track (tile, then square)
+        - who has higher gear
+        - who has inside lane if on the same square, but different lanes
         """
-        Sort drivers by track position:
-        - higher lap
-        - further tile_index
-        - further square_index
-        - more inside lane (lower inside_priority)
-        """
-        def key_func(d: Driver) -> Tuple[int, int, int , int]:
+        def key_func(d: Driver) -> Tuple[int, int, int , int, int]:
             lap = d.lap
             tile_idx = d.tile_idx
             square_idx = d.square_idx
-            inside = 100
-            if 0 <= tile_idx < self.track.length:
-                tile = self.track.tile(tile_idx)
-                inside = tile.inside_priority_for_lane(d.lane_idx)
-            return (-lap, -tile_idx, -square_idx, inside)
-        drivers. sort(key=key_func)
+            gear = self._gear_value_int(d.current_gear)
+            inside = self._indside_lane_value(d)
+            return (-lap, -tile_idx, -square_idx, -gear, inside)
+        ordered = sorted(drivers, key=key_func)
+        for pos, d in enumerate(ordered, start=1):
+            d.position = pos
+        drivers [:] = ordered
     
+    def sort_drivers_for_round(self, drivers: List[Driver]) -> None:
+        """Sort drivers in-place for the next round turn order.
+
+        Turn order rules:
+        - who has highest gear
+        - who is on the latest lap
+        - who is further on the track (tile, then square)
+        - who has inside lane if on the same square, but different lanes
+        """
+        def key_func(d: Driver) -> tuple[int, int, int, int, int]:
+            gear = self._gear_value_int(d.current_gear)
+            lap = d.lap
+            tile = d.tile_idx
+            square = d.square_idx
+            inside = self._indside_lane_value(d)
+            return (-gear, -lap, -tile, -square, inside)
+        drivers.sort(key=key_func)
+
     def _is_square_free(
         self,
         tile_idx: int,
@@ -196,7 +245,7 @@ class Game:
     ) -> None:
         """Run one full round where each driver takes a turn."""
         self.check_positions(drivers)
-        drivers.sort(key=lambda d: d.position)
+        self.sort_drivers_for_round(drivers)
         for driver in drivers:
             print(
                 f"Now rolling for {driver.name} "
@@ -207,15 +256,19 @@ class Game:
             print("\tSTATS")
             driver.stats.print_stats()
             while True:
-                raw = input("Enter dice for this driver (comma separated): ")
+                raw = input('Enter dice for this driver (comma separated): ')
                 if raw == '':
-                    print("Empty input; aborting this driver's turn.")
-                    return
+                    print("Empty input; Try again.")
+                    continue
                 seq = self.parse_input(raw)
                 if not seq:
                     print("Invalid dice input. Please try again.")
                     continue
                 try:
+                    if seq[0] == '00':
+                        driver.current_gear = '0'
+                        print(f"{driver.name} changed to gear 0. End of turn")
+                        break
                     mode = int(
                         input("Choose roll mode: (1) one by one, (2) all at once: ")
                     )

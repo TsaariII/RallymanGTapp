@@ -63,12 +63,12 @@ class Stats:
             '🟩'  # green flag   
         ]
         token_effects = {
-            '⬛️': 'LostGear',
-            '🟥': 'LostBrake',
-            '⬜️': 'LostCoast',
-            '⛅️': 'WeatherToken',
-            '🟨': 'YellowFlag',
-            '🟩': 'GreenFlag',
+            '⬛️': 'lost_gear',
+            '🟥': 'lost_brake',
+            '⬜️': 'lost_coast',
+            '⛅️': 'weather_token',
+            '🟨': 'yellow_flag',
+            '🟩': 'green_flag',
         }
         for c in range(1, crash_tokens + 1):
             token = random.choice(token_pool)
