@@ -1,7 +1,8 @@
 from __future__ import annotations
 import random
-from typing import Dict, List
-from driver import Driver, change_lane_or_move
+from typing import Dict, List, Callable, Optional, Tuple
+from dataclasses import dataclass
+from driver import Driver, do_movement
 from track import Track, prompt_tile_index, prompt_lane_index, prompt_square_index
 
 class Dice:
@@ -51,65 +52,234 @@ def coast_or_brake(driver: Driver, seq: List[str], gear: str) -> str:
             i += 1
     return gear
 
+@dataclass
+class StepAction:
+    """Describes what the driver does for a single movement step.
+    
+    choice: 1 = move forward same lane, 2 = change lane then move forward
+    new_lane: required when choice == 2
+    """
+    choice: int = 1
+    new_lane: Optional[int] = None
+
+MoveDecider = Callable[[int, Driver, Track, str], StepAction]
+
+def prompt_move_action(index: int, driver: Driver, track: Track, gear: str) -> StepAction:
+    while True:
+        try:
+            choice = int(
+                    input('Choose action (1: move forward same lane, 2: move forward change lane): ')
+            )
+        except ValueError:
+            print('Invalid action! Try again')
+            continue
+        if choice in (1, 2):
+            break
+        print('Invalid action! Try again')
+    new_lane = None
+    if choice == 2:
+        tile = track.tile(driver.tile_idx)
+        while True:
+            try:
+                new_lane = int(input('Enter lane change number (1, 2, 3): '))
+            except ValueError:
+                print('Invalid lane change input! Try again.')
+                continue
+            if 1 <= new_lane <= tile.lanes:
+                break
+            print("Invalid lane! Try again.")
+    return StepAction(choice=choice, new_lane=new_lane)
+
+RollProvider = Callable[[str, Dict[str, Dice]], str]
+def random_roll(symbol: str, dices: Dict[str, Dice]) -> str:
+    return dices[symbol].roll()
+
+@dataclass
+class DiceSequence:
+    """Everything that happens during one dice sequence execution."""
+    crash: int = 0
+    final_gear: str = ''
+    lost_control: bool = False
+    steps: List[Dict] = None
+    def __post_init__(self):
+        if self.steps is None:
+            self.steps = []
+
+def resolve_turn(
+    seq: List[str],
+    dices: Dict[str, Dice],
+    driver: Driver,
+    track: Track,
+    actions: MoveDecider = prompt_move_action,
+    roll_provider: RollProvider = random_roll
+) -> DiceSequence:
+    result = DiceSequence()
+    crash = 0
+    gear = ''
+    breaks: List[str] = []
+    for index, symbol in enumerate(seq):
+        log = {
+            'step': index,
+            'symbol': symbol,
+            'result': None,
+            'gear': None,
+            'action': None,
+            'crash_before': crash,
+            'crash_after': None,
+            'position_before': {
+                'tile_idx': driver.tile_idx,
+                'lane_idx': driver.lane_idx,
+                'sqr_idx': driver.square_idx
+            },
+            'position_after': None
+        }
+        if symbol == 'B':
+            breaks.append('B')
+            continue
+        for _ in breaks:
+            b_res = roll_provider('B', dices)
+            print(f" Brake roll: {b_res}")
+            if b_res == '⚠️':
+                crash += 1
+        breaks.clear()
+        roll_result = roll_provider(symbol, dices)
+        log['result'] = roll_result
+        print(f"  {symbol} -> {roll_result}")
+        if roll_result == '⚠️':
+            crash += 1
+            resolved = symbol
+        elif roll_result in {'⬜️', '🟥'}:
+            resolved = coast_or_brake(driver, seq, roll_result)
+        else:
+            resolved = roll_result
+        log['gear'] = resolved
+        if crash >= 3:
+            result.lost_control = True
+            result.crash = crash
+            final_gear = resolved
+            if gear in {'C', 'B'}:
+                final_gear = coast_or_brake(driver, seq, final_gear)
+            result.final_gear = final_gear
+            print(f"  *** LOST CONTROL on gear {final_gear} (crash={crash}) ***")
+            tile_color = track.tile(driver.tile_idx).color
+            driver.stats.add_crash_tokens(gear, tile_color)
+            try:
+                num = int(final_gear)
+            except ValueError:
+                num = 0
+            penalty_gear = '00' if num >= 3 else '0'
+            driver.current_gear = penalty_gear
+            log['crash_after'] = crash
+            log['position_after'] = {
+                'tile_idx': driver.tile_idx,
+                'lane_idx': driver.lane_idx,
+                'sqr_idx': driver.square_idx
+            }
+            result.steps.append(log)
+            return result
+        action = actions(index, driver, track, resolved)
+        log['action'] = {'choice': action.choice, 'new_lane': action.new_lane}
+        crash = do_movement(track, driver, crash, resolved, action.choice, action.new_lane)
+        log['crash_after'] = crash
+        log['position_after'] = {
+            'tile_idx': driver.tile_idx,
+            'lane_idx': driver.lane_idx,
+            'sqr_idx': driver.square_idx
+        }
+        if symbol != seq[-1]:
+            choice = input(
+                'Press Enter to continue or type exit to return to dice selection: '
+            ).strip()
+            if choice == 'exit':
+                result.crash = crash
+                result.final_gear = driver.current_gear
+                return result
+
+        result.steps.append(log)
+        if seq and seq[-1] == 'C':
+            gear = coast_or_brake(driver, seq, resolved)
+        else:
+            gear = symbol
+        driver.current_gear = gear
+    result.crash = crash
+    result.final_gear = driver.current_gear
+    return result
+
 def roll_one_by_one(
     seq: List[str],
     dice: Dict,
     driver: Driver,
     track: Track
     ) -> None:
-    crash = 0
-    gear = ''
-    breaks: List[str] = []
-    for symbol in seq:
-        if symbol == 'B':
-            breaks.append('B')
-            continue
-        for _ in breaks:
-            b_res = dice['B'].roll()
-            print(b_res)
-            if b_res == '⚠️':
-                crash += 1
-        if symbol != 'B':
-            breaks.clear()
-        print(symbol, end=' ')
-        result = dice[symbol].roll()
-        if result == '⚠️':
-            result = symbol
-        if result in {'⬜️', '🟥'}:
-           result = coast_or_brake(driver, seq, result)
-        print(result)
-        if result == '⚠️':
-            crash += 1
-        if crash == 3:
-            final_gear = result
-            if final_gear in {'C', 'B'}:
-                final_gear = coast_or_brake(driver, seq, final_gear)
-            print(f"You lost control on {final_gear} gear")
-            tile_color = track.tile(driver.tile_idx).color
-            driver.stats.add_crash_tokens(final_gear, tile_color)
-            try:
-                gear_num = int(final_gear)
-            except ValueError:
-                gear_num = 0
-            penalty_gear = '00' if gear_num >= 3 else '0'
-            driver.current_gear = penalty_gear
-            lane = prompt_lane_index(track, driver.tile_idx)
-            driver.lane_idx = lane
-            square = prompt_square_index(track, driver.tile_idx, lane)
-            driver.square_idx = square
-            return
-        change_lane_or_move(track, driver, crash, result)
-        if symbol != seq[-1]:
-            choice = input(
-                'Press Enter to continue or type exit to return to dice selection: '
-            ).strip()
-            if choice == 'exit':
-                return
-        if seq and seq[-1] == 'C':
-            gear = coast_or_brake(driver, seq, result)
-        else:
-            gear = symbol
-        driver.current_gear = gear
+    result = resolve_turn(
+        seq, dice, driver, track, 
+        actions=prompt_move_action, 
+        roll_provider=random_roll
+    )
+    if result.lost_control:
+        lane = prompt_lane_index(track, driver.tile_idx)
+        driver.lane_idx = lane
+        square = prompt_square_index(track, driver.tile_idx, lane)
+        driver.square_idx = square
+
+    # crash = 0
+    # gear = ''
+    # breaks: List[str] = []
+    # for symbol in seq:
+    #     if symbol == 'B':
+    #         breaks.append('B')
+    #         continue
+    #     for _ in breaks:
+    #         b_res = dice['B'].roll()
+    #         print(b_res)
+    #         if b_res == '⚠️':
+    #             crash += 1
+    #     if symbol != 'B':
+    #         breaks.clear()
+    #     print(symbol, end=' ')
+    #     result = dice[symbol].roll()
+    #     if result == '⚠️':
+    #         result = symbol
+    #     if result in {'⬜️', '🟥'}:
+    #        result = coast_or_brake(driver, seq, result)
+    #     print(result)
+    #     if result == '⚠️':
+    #         crash += 1
+    #     if crash == 3:
+    #         final_gear = result
+    #         if final_gear in {'C', 'B'}:
+    #             final_gear = coast_or_brake(driver, seq, final_gear)
+    #         print(f"You lost control on {final_gear} gear")
+    #         tile_color = track.tile(driver.tile_idx).color
+    #         driver.stats.add_crash_tokens(final_gear, tile_color)
+    #         try:
+    #             gear_num = int(final_gear)
+    #         except ValueError:
+    #             gear_num = 0
+    #         penalty_gear = '00' if gear_num >= 3 else '0'
+    #         driver.current_gear = penalty_gear
+    #         lane = prompt_lane_index(track, driver.tile_idx)
+    #         driver.lane_idx = lane
+    #         square = prompt_square_index(track, driver.tile_idx, lane)
+    #         driver.square_idx = square
+    #         return
+    #     # crash_before = crash
+    #     change_lane_or_move(track, driver, crash, result)
+    #     # if crash > crash_before:
+    #     #     result = '⚠️'
+    #     # else:
+    #     #     result = ''
+    #     if symbol != seq[-1]:
+    #         choice = input(
+    #             'Press Enter to continue or type exit to return to dice selection: '
+    #         ).strip()
+    #         if choice == 'exit':
+    #             return
+    #     if seq and seq[-1] == 'C':
+    #         gear = coast_or_brake(driver, seq, result)
+    #     else:
+    #         gear = symbol
+    #     driver.current_gear = gear
 
 def roll_all_at_once(
     seq: List[str],

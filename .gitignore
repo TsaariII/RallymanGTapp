@@ -1,3 +1,5 @@
 .DS_Store
 .vscode
 ./backend/app/__pycache__/
+.venv
+./backend/app/test.py
