@@ -239,7 +239,7 @@ class GameState:
                'id': id,
                'track': game.track.name,
                'weather': game.weather.value,
-               'teams': [t.name for t in game.teams]
+               'teams': [t.name for t in game.teams],
                'drivers': [d.name for d in game.drivers]
             })
         return result
