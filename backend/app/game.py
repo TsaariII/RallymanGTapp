@@ -1,17 +1,46 @@
 from __future__ import annotations
-import time
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Optional
+from dataclasses import dataclass, field
 from enums import Weather, Tires
-from track import (
-    Track,
-    prompt_tile_index,
-    prompt_lane_index,
-    prompt_square_index
-)
+from track import Track
 from team import Team
 from driver import Driver
-from dice import Dice, create_dice, roll_all_at_once, roll_one_by_one
+from dice import Dice, create_dice, all_at_once, resolve_turn
 from tire import Tire
+from dice import (
+    Dice,
+    DiceSequence,
+    StepAction,
+    MoveDecider,
+    RollProvider,
+    create_dice,
+    random_roll,
+    resolve_turn
+)
+
+@dataclass
+class TurnInput:
+    """Everything needed to execute one driver's turn."""
+    name: str
+    dices: List[str]
+    actions: List[StepAction]
+
+@dataclass
+class TurnResult:
+    """What happened during one driver's turn."""
+    name: str
+    results: DiceSequence
+    pos_after: Dict
+    gear_after: str
+    lost_control: bool
+
+@dataclass
+class RoundResult:
+    """Results of a full race round (all drivers)."""
+    turn_results: List[TurnResult] = field(default_factory=list)
+    standings: List[Dict] = field(default_factory=list)
+
+
 
 class Game:
     def __init__(self, track_name: str) -> None:
@@ -19,74 +48,224 @@ class Game:
         self.weather: Weather = Weather.DRY
         self.teams: List[Team] = []
         self.drivers: List[Driver] = []
-        self.set_weather()
+        self.dices: Dict[str, Dice] = {
+            face: create_dice(face)
+            for face in ('1', '2', '3', '4', '5', '6', 'C', 'B')
+        }
     
-    def set_weather(self) -> None:
-        """Ask the user for race weather."""
-        while True:
-            choice = input('Select weather (Dry/Wet): ').strip().lower()
-            if choice in ('dry', 'd'):
-                self.weather = Weather.DRY
-                break
-            if choice in ('wet', 'w'):
-                self.weather = Weather.WET
-                break
-            print("Invalid choice. Please type 'Dry' or 'Wet'.")
-
-    def setup_game(self) -> None:
-        """Create teams and drivers."""
-        self.teams = [
-            Team("Evante", "Collins", "Cooper", Tires.NORMAL, self.weather)
-        ]
-        self.drivers = [driver for team in self.teams for driver in team.drivers]
-
-    def set_tires(self) -> None:
-        """Let user choose tire type per driver."""
-        print("\n=== Tire Selection ===")
-        print("Available tire types:")
-        print("1. Normal\n2. Sprint\n3. Wet\n")
-        for team in self.teams:
-            for driver in team.drivers:
-                while True:
-                    try:
-                        choice = int(
-                            input(
-                                f"Select tire type for {driver.name} "
-                                f"from team {driver.team}: "
-                            )
-                        )
-                    except ValueError:
-                        print('Invald choice. Please enter 1, 2 or 3.')
-                        continue
-                    if choice not in (1, 2, 3):
-                        print('Invald choice. Please enter 1, 2 or 3.')
-                        continue
-                    break
-                tire_type = {
-                    1: Tires.NORMAL,
-                    2: Tires.SPRINT,
-                    3: Tires.WET
-                }[choice]
-                driver.tires = Tire(tire_type, self.weather)
+    def set_weather(self, weather: Weather) -> None:
+        """Set the race weather. Call before adding teams/drivers."""
+        self.weather = weather
     
-    def set_driver_positions(self) -> None:
-        """Prompt starting grid and on-track positions for each driver."""
-        grid_pos: Set[int] = set()
-        for driver in self.drivers:
-            print(
-                f"Setting position for {driver.name} "
-                f"(gear: {driver.current_gear}) "
-                f"from team {driver.team}"
+    def add_team(
+        self,
+        team_name: str,
+        d1_name: str,
+        d2_name: str,
+        tires: Tires = Tires.NORMAL
+    ) -> Team:
+        """Create a team with two drivers and add them to the game.
+        Returns the created Team so callers can inspect it if needed.
+        """
+        team = Team(team_name, d1_name, d2_name, tires, self.weather)
+        self.teams.append(team)
+        self.drivers.extend(team.drivers)
+        return team
+    
+    def set_tires(self, name: str, type: Tires) -> None:
+        """Set tire type for a specific driver by name.
+        Raises ValueError if the driver is not found.
+        """
+        driver = self._find_driver(name)
+        driver.tires = Tire(type, self.weather)
+
+    def set_starting_positions(
+        self,
+        name: str,
+        position: int,
+        tile_idx: int,
+        lane_idx: int,
+        square_idx: int
+    ) -> None:
+        """Set a driver's starting grid position and on-track location.
+        Validates:
+        - grid_position is 1–12 and not already taken
+        - tile/lane/square exist and the square is not occupied
+        Raises ValueError on any validation failure.
+        """
+        driver = self._find_driver(name)
+        if not (1 <= position <= 12):
+            raise ValueError(f"Grid position must be 1–12, got {position}")
+        taken = {d.position for d in self.drivers if d is not driver and d.position > 0}
+        if position in taken:
+            raise ValueError(f"Grid position {position} is already taken")
+        if not (0 <= tile_idx < self.track.length):
+            raise ValueError(
+                f"Tile index must be 0–{self.track.length - 1}, got {tile_idx}"
             )
-            self.set_driver_starting_position(driver, grid_pos)
+        tile = self.track.tile(tile_idx)
+        if lane_idx not in tile.lane_squares or not tile.lane_squares[lane_idx]:
+            raise ValueError(
+                f"Lane {lane_idx} does not exist or is empty on tile {tile.number}"
+            )
+        lane_len = len(tile.lane_squares[lane_idx])
+        if not (0 <= square_idx < lane_len):
+            raise ValueError(
+                f"Square index must be 0–{lane_len - 1} for tile {tile.number} "
+                f"lane {lane_idx}, got {square_idx}"
+            )
+        if not self._is_square_free(tile_idx, lane_idx, square_idx, ignore_driver=driver):
+            raise ValueError(
+                f"Square (tile={tile.number}, lane={lane_idx}, square={square_idx}) "
+                f"is already occupied"
+            )
+        driver.position = position
+        driver.starting_tile = tile_idx
+        driver.tile_idx = tile_idx
+        driver.lane_idx = lane_idx
+        driver.square_idx = square_idx
+        if tile_idx != 0:
+            driver.lap = 0
     
-    def print_countdown(self) -> None:
-        """Start lights animation."""
-        for  i in range(1, 6):
-            print('\r' + '🔴 ' * i, end='', flush=True)
-            time.sleep(1)
-        print('\nRace begins!!')
+    def driver_turn(
+        self,
+        name: str,
+        dices: List[str],
+        actions: List[StepAction],
+        roll_provider: RollProvider = random_roll
+    ) -> TurnResult:
+        """Execute a single driver's turn.
+ 
+        Args:
+            name:    which driver is rolling
+            dices:  list of dice symbols, e.g. ['3', '4', 'C']
+            actions:        one StepAction per die — what to do after each roll
+            roll_provider:  how dice are rolled (random by default, injectable for tests)
+ 
+        Returns:
+            TurnResult with the full DiceSequence outcome and driver state after.
+        """
+        driver = self._find_driver(name)
+        if dices and dices[0] == '00':
+            driver.current_gear = '0'
+            return TurnResult(
+                name=name,
+                results=DiceSequence(crash=0, final_gear='0', lost_control=False),
+                pos_after=self._driver_location_dict(driver),
+                gear_after='0',
+                lost_control=False
+            )
+        action_list = list(actions)
+        def action_provider(index:int, d: Driver, t: Track, gear: str) -> StepAction:
+            if index < len(action_list):
+                return action_list[index]
+            return StepAction(choice=1)
+        dice_result = resolve_turn(
+            seq=dices,
+            dices=self.dices,
+            driver=driver,
+            track=self.track,
+            actions=action_provider,
+            roll_provider=roll_provider
+        )
+        driver.stats.turns += 1
+        driver.stats.add_lap_time(driver.current_gear)
+        return TurnResult(
+            name=name,
+            results=dice_result,
+            pos_after=self._driver_location_dict(driver),
+            gear_after=driver.current_gear,
+            lost_control=dice_result.lost_control
+        )
     
+    def execute_round(
+        self,
+        inputs: List[TurnInput],
+        roll_provider: RollProvider = random_roll
+    ) -> RoundResult:
+        """Execute a full race round.
+ 
+        Updates positions and turn order, then runs each driver's turn
+        in the order determined by sort_drivers_for_round().
+ 
+        Args:
+            turn_inputs: one TurnInput per driver, keyed by driver_name.
+                         The order in the list doesn't matter — drivers are
+                         sorted internally.
+            roll_provider: injectable dice roller.
+ 
+        Returns:
+            RoundResult with per-driver outcomes and final standings.
+        """
+        self.check_positions(self.drivers)
+        self.sort_drivers_for_round(self.drivers)
+        input_by_name = {ti.name: ti for ti in inputs}
+        round_result = RoundResult()
+        for driver in self.drivers:
+            ti = input_by_name.get(driver.name)
+            if ti is None:
+                continue
+            turn_result = self.driver_turn(
+                name=ti.name,
+                dices=ti.dices,
+                actions=ti.actions,
+                roll_provider=roll_provider
+            )
+            round_result.turn_results.append(turn_result)
+        self.check_positions(self.drivers)
+        round_result.standings = self.get_standings()
+        return round_result
+    
+    def get_standings(self) -> List[Dict]:
+         """Return current race standings as a list of dicts."""
+         self.check_positions(self.drivers)
+         return [
+            {
+                'position': d.position,
+                'name': d.name,
+                'team': d.team,
+                'gear': d.current_gear,
+                'lap': d.lap,
+                'tile': d.tile_idx,
+                'lane': d.lane_idx,
+                'square': d.square_idx,
+                'total_time': d.stats.total_time_str
+            }
+            for d in self.drivers
+         ]
+
+    def get_driver_state(self, name: str) -> Dict:
+        """Return full state of a single driver."""
+        d = self._find_driver(name)
+        return {
+            'name': d.name,
+            'team': d.team,
+            'position': d.position,
+            'gear': d.current_gear,
+            'lap': d.lap,
+            'tile': d.tile_idx,
+            'lane': d.lane_idx,
+            'square': d.square_idx,
+            'starting_tile': d.starting_tile,
+            'tires': {
+                'type': d.tires.type_label,
+                'condition': d.tires.condition.value,
+                'turns': d.tires.turns
+            },
+            'stats': {
+                'turns': d.stats.turns,
+                'total_time': d.stats.total_time_str,
+                'lap_times': d.stats.lap_time_str,
+                'focus_tokens': d.stats.focus_tokens,
+                'lost_gear': d.stats.lost_gear,
+                'lost_brake': d.stats.lost_brake,
+                'lost_coast': d.stats.lost_coast,
+                'weather_token': d.stats.weather_token,
+                'yellow_flag': d.stats.yellow_flag,
+                'green_flag': d.stats.green_flag
+            }
+        }
+
     def parse_input(self, raw: str) -> List[str]:
         """
         Parse dice input like: '1,2,3,C,B'
@@ -109,29 +288,6 @@ class Game:
                    return []
         return seq
 
-    def prompt_starting_grid_position(
-        self,
-        driver: Driver,
-        positions: Set[int]
-    ) -> int:
-        """Ask for a unique grid position 1–12."""
-        while True:
-            try:
-                pos = int(
-                    input(
-                        f"Enter position for {driver.name} from team "
-                        f"{driver.team} (1-12): "
-                    )
-                )
-            except ValueError:
-                print("Invalid or duplicate position! Try again.")
-                continue
-            if not (1 <= pos <= 12) or pos in positions:
-                print("Invalid or duplicate position! Try again.")
-                continue
-            positions.add(pos)
-            return pos
-    
     def _gear_value_int(self, gear: str) -> int:
         """Convert a gear string to an int for sorting.
 
@@ -208,100 +364,23 @@ class Game:
         ignore_driver=None,
     ) -> bool:
         """True if no other driver occupies (tile_idx, lane_idx, square_idx)."""
-        for d in self.drivers:  # adjust if your list is named differently
+        for d in self.drivers:
             if ignore_driver is not None and d is ignore_driver:
                 continue
             if (d.tile_idx, d.lane_idx, d.square_idx) == (tile_idx, lane_idx, square_idx):
                 return False
         return True
 
-    def set_driver_starting_position(
-        self,
-        driver: Driver,
-        positions: Set[int]
-    ) -> None:
-        """Set grid and on-track starting tile/lane/square for one driver."""
-        # self.track.print_track()
-        driver.position = self.prompt_starting_grid_position(driver, positions)
-        while True:
-            tile_idx = prompt_tile_index(self.track)
-            if tile_idx != 0:
-                driver.lap = 0
-            lane_idx = prompt_lane_index(self.track, tile_idx)
-            square_idx = prompt_square_index(self.track, tile_idx, lane_idx)
-            if not self._is_square_free(tile_idx, lane_idx, square_idx, ignore_driver=driver):
-                print("Square already occupied! Pick another.")
-                continue
-            break
-        driver.starting_tile = tile_idx
-        driver.tile_idx = tile_idx
-        driver.lane_idx = lane_idx
-        driver.square_idx = square_idx
+    def _find_driver(self, name: str) -> Driver:
+        """Look up a driver by name. Raises ValueError if not found."""
+        for d in self.drivers:
+            if d.name == name:
+                return d
+        raise ValueError("Driver '{name}' not found in game")
     
-    def race_round(
-        self,
-        drivers: List[Driver],
-        dices: Dict[str, Dice]
-    ) -> None:
-        """Run one full round where each driver takes a turn."""
-        self.check_positions(drivers)
-        self.sort_drivers_for_round(drivers)
-        for driver in drivers:
-            print(
-                f"Now rolling for {driver.name} "
-                f"(Gear {driver.current_gear}) "
-                f"from team {driver.team} "
-                f"(Position {driver.position})"
-            )
-            print("\tSTATS")
-            driver.stats.print_stats()
-            while True:
-                raw = input('Enter dice for this driver (comma separated): ')
-                if raw == '':
-                    print("Empty input; Try again.")
-                    continue
-                seq = self.parse_input(raw)
-                if not seq:
-                    print("Invalid dice input. Please try again.")
-                    continue
-                try:
-                    if seq[0] == '00':
-                        driver.current_gear = '0'
-                        print(f"{driver.name} changed to gear 0. End of turn")
-                        break
-                    mode = int(
-                        input("Choose roll mode: (1) one by one, (2) all at once: ")
-                    )
-                except ValueError:
-                    print('Invalid roll mode. Try again.')
-                    continue
-                if mode == 1:
-                    roll_one_by_one(seq, dices, driver, self.track)
-                elif mode == 2:
-                    roll_all_at_once(seq, dices, driver, self.track)
-                else:
-                    print("Invalid roll mode.")
-                    continue
-                driver.stats.turns += 1
-                driver.stats.add_lap_time(driver.current_gear)
-                break
-    
-    def race_loop(self) -> None:
-        """Loop race rounds until user stops."""
-        dices: Dict[str, Dice] = {
-            face: create_dice(face)
-            for face in ("1", "2", "3", "4", "5", "6", "C", "B")
+    def _driver_location_dict(self, driver: Driver) -> Dict:
+        return {
+            'tile_idx': driver.tile_idx,
+            'lane_idx': driver.lane_idx,
+            'square_idx': driver.square_idx
         }
-        while True:
-            self.race_round(list(self.drivers), dices)
-            cont = input('End of race turn. Continue to next? (y/n): ').strip().lower()
-            if cont.startswith('n'):
-                break
-
-    def start(self) -> None:
-        """Run full game setup and start the race."""
-        self.setup_game()
-        self.set_tires()
-        self.set_driver_positions()
-        self.print_countdown()
-        self.race_loop()

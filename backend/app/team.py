@@ -17,10 +17,10 @@ class Team:
             Driver(driver_1_name, name, tires, weather),
             Driver(driver_2_name, name, tires, weather)
         ]
-        @property
-        def driver1(self) -> Driver:
-            return self.drivers[0]
-        @property
-        def driver2(self) -> Driver:
-            return self.drivers[1]
+    @property
+    def driver1(self) -> Driver:
+        return self.drivers[0]
+    @property
+    def driver2(self) -> Driver:
+        return self.drivers[1]
         

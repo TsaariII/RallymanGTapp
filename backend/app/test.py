@@ -115,7 +115,7 @@ def test_simple_three_dice_no_warnings():
     print(f"  lost_control: {result.lost_control}")
     for s in result.steps:
         print(f"    step {s['step']}: {s['symbol']} -> {s['result']}, "
-              f"pos {s['position_before']} -> {s['position_after']}, "
+              f"pos {s['pos_before']} -> {s['pos_after']}, "
               f"crash {s['crash_before']}->{s['crash_after']}")
 
     assert result.crash == 0, f"Expected 0 crashes, got {result.crash}"
@@ -209,7 +209,7 @@ def test_sequence_with_lane_change():
     for s in result.steps:
         print(f"    step {s['step']}: {s['symbol']} -> {s['result']}, "
               f"action={s['action']}, "
-              f"pos {s['position_before']} -> {s['position_after']}")
+              f"pos {s['pos_before']} -> {s['pos_after']}")
 
     assert driver.lane_idx == 2, f"Expected lane 2, got {driver.lane_idx}"
     assert result.crash == 0
