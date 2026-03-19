@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
-from track_json import find_track_json, load_track_json
+from backend.app.track_loader.track_json import find_track_json, load_track_json
 
 
 @dataclass

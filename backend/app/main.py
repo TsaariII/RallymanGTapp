@@ -1,5 +1,5 @@
 from game import Game
-from db_init import init_tracks_db
+from backend.app.track_loader.db_init import init_tracks_db
 
 def main() -> None:
     track_name = input('Enter track name: ').strip()

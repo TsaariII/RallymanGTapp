@@ -18,14 +18,14 @@ Usage:
 from __future__ import annotations
 import uuid
 from typing import Any, Dict, List, Optional
-from enums import Tires, TireCondition, Weather
-from tire import Tire
-from stats import Stats
-from driver import Driver
-from team import Team
-from track import Track
-from game import Game
-from dice import create_dice
+from models.enums import Tires, TireCondition, Weather
+from models.tire import Tire
+from models.stats import Stats
+from models.driver import Driver
+from models.team import Team
+from models.track import Track
+from models.game import Game
+from models.dice import create_dice
 
 def serialize_stats(stats: Stats) -> Dict[str, Any]:
     """Snapshot a Stats object into a plain dict."""
@@ -51,7 +51,7 @@ def desrialize_stats(data: Dict[str, Any]) -> Stats:
     s.focus_tokens = data['focus_tokens']
     s.used_focus_tokens = data['used_focus_tokens']
     s.lost_gear = data['lost_gear']
-    s.lost_brake = data['lost_break']
+    s.lost_brake = data['lost_brake']
     s.lost_coast = data['lost_coast']
     s.weather_token = data['weather_token']
     s.yellow_flag = data['yellow_flag']
@@ -64,10 +64,10 @@ def desrialize_stats(data: Dict[str, Any]) -> Stats:
 def serialize_tires(tire: Tire) -> Dict[str, Any]:
     """Snapshot a Tire object into a plain dict."""
     return {
-        'type': tire.type,
-        'weather': tire.weather,
+        'type': tire.type.value,
+        'weather': tire.weather.value,
         'turns': tire.turns,
-        'condition': tire.condition
+        'condition': tire.condition.value
     }
 
 def deserialize_tires(data: Dict[str, Any]) -> Tire:

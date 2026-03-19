@@ -1,15 +1,15 @@
 from __future__ import annotations
 import time
 from typing import Dict, List, Set
-from enums import Weather, Tires
-from game import Game, TurnInput
-from track import (
+from  models.enums import Weather, Tires
+from models.game import Game, TurnInput
+from models.track import (
     Track,
     prompt_tile_index,
     prompt_lane_index,
     prompt_square_index
 )
-from dice import (
+from models.dice import (
     Dice,
     StepAction,
     DiceSequence,
@@ -22,7 +22,7 @@ from dice import (
     all_at_once,
     apply_all_at_once_moves
 )
-from driver import Driver
+from models.driver import Driver
 
 def cli_roll(symbol: str, dices: Dict[str, Dice]) -> str:
     result = random_roll(symbol, dices)
