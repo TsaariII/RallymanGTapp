@@ -48,7 +48,7 @@ from app.models.dice import (
 from app.state.game_state import GameState, serialize_game
 from app.track_loader.track_json import find_track_json, load_track_json
 
-app = FastAPI(title='Rallyman GT', version='0.1.0')
+router = FastAPI(title='Rallyman GT', version='0.1.0')
 store = GameState()
 
 # POST /games
@@ -126,7 +126,7 @@ def _parse_tires(value: str) -> Tires:
         raise HTTPException(status_code=400, detail=f"Invalid tire type '{value}'. Must be 'Normal', 'Sprint', or 'Wet'.")
 
 
-@app.get('/tracks/{name}')
+@router.get('/tracks/{name}')
 def get_track(name: str) -> Dict[str, Any]:
     """Return raw track JSON for the frontend to render the board.
     """
@@ -138,12 +138,12 @@ def get_track(name: str) -> Dict[str, Any]:
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@app.get('/games')
+@router.get('/games')
 def list_games() -> List[Dict[str, Any]]:
     """List all active games (summary only)."""
     return store.list_games()
 
-@app.post('/games', status_code=201)
+@router.post('/games', status_code=201)
 def create_game(body: CreateGameRequest) -> CreateGameRequest:
     """Create a new game.
     Returns the game_id you'll use for every subsequent call.
@@ -157,20 +157,20 @@ def create_game(body: CreateGameRequest) -> CreateGameRequest:
     id = store.create(game)
     return CreateGameRequest(id=id, track=body.track, weather=body.weather)
 
-@app.get('/games/{game_id}')
+@router.get('/games/{game_id}')
 def get_game(id:str) -> Dict[str, Any]:
     """Return the full serialized game snapshot."""
     game = _get_game(id)
     store.save(id)
     return store.snapshot(id)
 
-@app.delete('/games/{game_id}', status_code=204)
+@router.delete('/games/{game_id}', status_code=204)
 def delete_game(id: str) -> None:
     """Remove a game from the store."""
     _get_game(id)
     store.delete(id)
 
-@app.post('/games/{game_id}/teams')
+@router.post('/games/{game_id}/teams')
 def add_teams(id: str, body: AddTeamsRequest) -> Dict[str, Any]:
     """Add one or more teams to the game.
     Each team creates two drivers automatically.
@@ -190,7 +190,7 @@ def add_teams(id: str, body: AddTeamsRequest) -> Dict[str, Any]:
     store.save(id)
     return {'teams': added, 'total_drivers': len(game.drivers)}
 
-@app.put('/games/{game_id}/tires')
+@router.put('/games/{game_id}/tires')
 def set_tires(id: str, body: SetTiresRequest) -> Dict[str, Any]:
     """Change tire type for a specific driver."""
     game = _get_game(id)
@@ -206,7 +206,7 @@ def set_tires(id: str, body: SetTiresRequest) -> Dict[str, Any]:
         'tires': d_state['tires']
     }
 
-@app.put('/games/{game_id}/positions')
+@router.put('/games/{game_id}/positions')
 def set_positions(id: str, body: SetPositionsRequest) -> Dict[str, Any]:
     """Set a driver's starting grid position and on-track location.
     The tile is 0-indexed (tile 1 in JSON = index 0 here).
@@ -225,7 +225,7 @@ def set_positions(id: str, body: SetPositionsRequest) -> Dict[str, Any]:
     store.save(id)
     return game.get_driver_state(body.name)
 
-@app.post('/games/{game_id}/turns')
+@router.post('/games/{game_id}/turns')
 def execute_turn(id: str, body: TurnRequest) -> Dict[str, Any]:
     """Execute a single driver's turn in one-by-one mode.
 
@@ -261,7 +261,7 @@ def execute_turn(id: str, body: TurnRequest) -> Dict[str, Any]:
     }
 
 # Step 1: roll all dice (no movement yet)
-app.post('/games/{game_id}/turns/aao/roll')
+router.post('/games/{game_id}/turns/aao/roll')
 def all_at_once_roll(id: str, body: AllAtOnceRequest) -> Dict[str, Any]:
     """Roll all dice at once — returns rolls and available moves.
  
@@ -299,7 +299,7 @@ def all_at_once_roll(id: str, body: AllAtOnceRequest) -> Dict[str, Any]:
     }
 
 # Step 2: place the driver after seeing rolls
-@app.post('/games/{game_id}/turns/aao/place')
+@router.post('/games/{game_id}/turns/aao/place')
 def all_at_once_place(id: str, body: AllAtOnceLocationRequest) -> Dict[str, Any]:
     """Place the driver after an all-at-once roll.
     """
@@ -313,7 +313,7 @@ def all_at_once_place(id: str, body: AllAtOnceLocationRequest) -> Dict[str, Any]
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     try:
-        apply_all_at_once_moves(
+        routerly_all_at_once_moves(
             aao_result=result,
             driver=driver,
             track=game.track,
@@ -329,7 +329,7 @@ def all_at_once_place(id: str, body: AllAtOnceLocationRequest) -> Dict[str, Any]
     store.save(id)
     return game.get_driver_state(body.name)
 
-@app.get('/games/{game_id}/standings')
+@router.get('/games/{game_id}/standings')
 def get_standings(id: str) -> List[Dict[str, Any]]:
     """Current race standings.
     Calls game.get_standings() which internally runs check_positions().
@@ -337,7 +337,7 @@ def get_standings(id: str) -> List[Dict[str, Any]]:
     game = _get_game(id)
     return game.get_standings()
 
-@app.get('/games/{game_id}/drivers/{name}')
+@router.get('/games/{game_id}/drivers/{name}')
 def get_driver(id: str, name: str) -> Dict[str, Any]:
     """Full state of a single driver."""
     game = _get_game(id)
