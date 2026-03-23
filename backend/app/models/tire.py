@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from enums import Tires, TireCondition, Weather
+from backend.app.models.enums import Tires, TireCondition, Weather
 
 @dataclass
 class Tire:

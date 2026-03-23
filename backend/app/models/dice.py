@@ -2,8 +2,8 @@ from __future__ import annotations
 import random
 from typing import Dict, List, Callable, Optional, Tuple
 from dataclasses import dataclass, field
-from driver import Driver, do_movement
-from track import Track
+from backend.app.models.driver import Driver, do_movement
+from backend.app.models.track import Track
 
 
 class Dice:

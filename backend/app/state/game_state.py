@@ -18,14 +18,14 @@ Usage:
 from __future__ import annotations
 import uuid
 from typing import Any, Dict, List, Optional
-from models.enums import Tires, TireCondition, Weather
-from models.tire import Tire
-from models.stats import Stats
-from models.driver import Driver
-from models.team import Team
-from models.track import Track
-from models.game import Game
-from models.dice import create_dice
+from backend.app.models.enums import Tires, TireCondition, Weather
+from backend.app.models.tire import Tire
+from backend.app.models.stats import Stats
+from backend.app.models.driver import Driver
+from backend.app.models.team import Team
+from backend.app.models.track import Track
+from backend.app.models.game import Game
+from backend.app.models.dice import create_dice
 
 def serialize_stats(stats: Stats) -> Dict[str, Any]:
     """Snapshot a Stats object into a plain dict."""

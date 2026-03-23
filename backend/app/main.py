@@ -1,4 +1,4 @@
-from game import Game
+from backend.app.models.game import Game
 from backend.app.track_loader.db_init import init_tracks_db
 
 def main() -> None:

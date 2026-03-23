@@ -1,15 +1,15 @@
 from __future__ import annotations
 import time
 from typing import Dict, List, Set
-from  models.enums import Weather, Tires
-from models.game import Game, TurnInput
-from models.track import (
+from backend.app.models.enums import Weather, Tires
+from backend.app.models.game import Game, TurnInput
+from backend.app.models.track import (
     Track,
     prompt_tile_index,
     prompt_lane_index,
     prompt_square_index
 )
-from models.dice import (
+from backend.app.models.dice import (
     Dice,
     StepAction,
     DiceSequence,

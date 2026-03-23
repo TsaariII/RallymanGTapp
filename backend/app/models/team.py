@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List
-from enums import Tires, Weather
-from driver import Driver
+from backend.app.models.enums import Tires, Weather
+from backend.app.models.driver import Driver
 
 class Team:
     def __init__(

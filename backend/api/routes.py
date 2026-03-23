@@ -37,16 +37,16 @@ for p in [str(_REPO_ROOT), str(_APP_DIR), str(_MODELS_DIR)]:
     if p not in sys.path:
         sys.path.insert(0, p)
 
-from app.models.game import Game
-from app.models.enums import Weather, Tires
-from app.models.dice import (
+from backend.app.models.game import Game
+from backend.app.models.enums import Weather, Tires
+from backend.app.models.dice import (
     StepAction,
     random_roll,
     all_at_once,
     apply_all_at_once_moves
 )
-from app.state.game_state import GameState, serialize_game
-from app.track_loader.track_json import find_track_json, load_track_json
+from backend.app.state.game_state import GameState, serialize_game
+from backend.app.track_loader.track_json import find_track_json, load_track_json
 
 router = FastAPI(title='Rallyman GT', version='0.1.0')
 store = GameState()

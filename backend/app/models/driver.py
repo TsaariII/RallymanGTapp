@@ -1,8 +1,8 @@
 from __future__ import annotations
-from enums import Tires, Weather
-from stats import Stats
-from tire import Tire
-from track import Track
+from backend.app.models.enums import Tires, Weather
+from backend.app.models.stats import Stats
+from backend.app.models.tire import Tire
+from backend.app.models.track import Track
 
 class Driver:
     def __init__(self, name: str, team: str, tires: Tires, weather: Weather) -> None:

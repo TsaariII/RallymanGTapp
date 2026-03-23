@@ -1,15 +1,12 @@
 from __future__ import annotations
-
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
-
 from backend.app.track_loader.track_json import find_track_json, load_track_json
 
 
 @dataclass
 class Square:
     """Square in a lane.
-
     data contains ONLY keys present in the JSON square object.
     """
     lane: int
@@ -36,10 +33,8 @@ class Tile:
 
     def build_merge_anchors(self) -> None:
         """Build anchor map for merge placeholders inside this tile.
-
         Anchor: square has 'merge' AND has at least one other key (typically 'inside' and/or rules).
         Placeholder: square is exactly {'merge': 'Mx'}.
-
         We do NOT fail parsing if a placeholder has no same-tile anchor.
         Movement rules can decide what to do with that.
         """
@@ -63,7 +58,6 @@ class Tile:
 
     def effective_square(self, lane: int, square_idx: int) -> Square:
         """Return square to use for rules.
-
         If current square is a placeholder {'merge': 'Mx'} and an anchor exists, return the anchor.
         Otherwise return the square itself.
         """
