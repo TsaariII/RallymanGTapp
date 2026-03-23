@@ -5,7 +5,7 @@ from enums import Weather, Tires
 from track import Track
 from team import Team
 from driver import Driver
-from dice import Dice, create_dice, all_at_once, resolve_turn
+from dice import Dice, create_dice, all_at_once, resolve_turn, AllAtOnceResult
 from tire import Tire
 from dice import (
     Dice,
@@ -52,6 +52,7 @@ class Game:
             face: create_dice(face)
             for face in ('1', '2', '3', '4', '5', '6', 'C', 'B')
         }
+        self._pending_aao: Dict[str, AllAtOnceResult] = {}
     
     def set_weather(self, weather: Weather) -> None:
         """Set the race weather. Call before adding teams/drivers."""
