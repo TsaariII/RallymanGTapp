@@ -17,5 +17,5 @@ def create_app() -> FastAPI:
         allow_headers=['*']
     )
     app.state.game_state = GameState()
-    app.include_router(router, prefix='api/')
+    app.include_router(router, prefix='/api')
     return app
